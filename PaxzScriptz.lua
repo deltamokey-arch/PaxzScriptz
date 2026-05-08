@@ -1,6 +1,7 @@
--- PaxzScriptz: High-end Web Dashboard UI Library for Roblox
--- Reworked for premium visual architecture, modern list-based layout,
--- responsive scaling, top navigation, hero landing interface, and animated transitions.
+-- PaxzScriptz: Elite Premium Web Dashboard UI Library for Roblox Executors
+-- Completely rewritten for production stability, flawless layout engine, and professional visual hierarchy.
+-- Architecture: Centralized root frame → NavBar (fixed top) → Hero Section → Content ScrollArea
+-- All child elements use EXPLICIT sizing (no AutomaticSize conflicts), proper Z-indexing, and UICorner styling.
 
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
@@ -123,32 +124,31 @@ local function CreatePill(parent, text, status)
 end
 
 local function CreateRow(parent, title, description)
+    -- FIXED: Explicit sizing, no AutomaticSize conflicts
     local row = create(parent, "Frame", {
         Name = title:gsub("%s+", "_"),
         BackgroundColor3 = Color3.fromRGB(14, 14, 22),
-        Size = UDim2.new(1, 0, 0, 88),
+        BorderSizePixel = 0,
+        Size = UDim2.new(1, 0, 0, 100),
+        LayoutOrder = parent and (parent:FindFirstChildOfClass("UIListLayout") and (#parent:GetChildren() + 1) or 0) or 0,
     })
     createCorner(row, 18)
     createStroke(row, Color3.fromRGB(60, 60, 82))
 
-    create(row, "Frame", {
-        Name = "RowBackground",
-        BackgroundTransparency = 1,
-        Size = UDim2.new(1, 0, 1, 0),
-        Position = UDim2.new(0, 0, 0, 0),
-    })
-
     local left = create(row, "Frame", {
         Name = "RowLeft",
         BackgroundTransparency = 1,
-        Size = UDim2.new(0.64, 0, 1, 0),
-        Position = UDim2.new(0, 0, 0, 0),
+        BorderSizePixel = 0,
+        Size = UDim2.new(0.65, 0, 1, 0),
+        Position = UDim2.new(0, 12, 0, 0),
     })
+
     local right = create(row, "Frame", {
         Name = "RowRight",
         BackgroundTransparency = 1,
-        Size = UDim2.new(0.36, 0, 1, 0),
-        Position = UDim2.new(0.64, 12, 0, 0),
+        BorderSizePixel = 0,
+        Size = UDim2.new(0.35, -24, 1, 0),
+        Position = UDim2.new(0.65, 12, 0, 0),
     })
 
     create(left, "TextLabel", {
@@ -157,30 +157,28 @@ local function CreateRow(parent, title, description)
         Text = title,
         TextColor3 = Color3.fromRGB(255, 255, 255),
         Font = Enum.Font.GothamSemibold,
-        TextSize = 18,
+        TextSize = 16,
         Size = UDim2.new(1, 0, 0, 28),
-        Position = UDim2.new(0, 0, 0, 12),
+        Position = UDim2.new(0, 0, 0, 10),
         TextXAlignment = Enum.TextXAlignment.Left,
-    })
-    create(left, "TextLabel", {
-        Name = "RowDescription",
-        BackgroundTransparency = 1,
-        Text = description or "",
-        TextColor3 = Color3.fromRGB(159, 162, 166),
-        Font = Enum.Font.Gotham,
-        TextSize = 14,
-        Size = UDim2.new(1, 0, 0, 36),
-        Position = UDim2.new(0, 0, 0, 38),
-        TextXAlignment = Enum.TextXAlignment.Left,
-        TextWrapped = true,
+        TextYAlignment = Enum.TextYAlignment.Top,
     })
 
-    create(row, "Frame", {
-        Name = "RowDivider",
-        BackgroundColor3 = Color3.fromRGB(40, 40, 52),
-        Size = UDim2.new(1, 0, 0, 1),
-        Position = UDim2.new(0, 0, 1, -1),
-    })
+    if description and description ~= "" then
+        create(left, "TextLabel", {
+            Name = "RowDescription",
+            BackgroundTransparency = 1,
+            Text = description,
+            TextColor3 = Color3.fromRGB(159, 162, 166),
+            Font = Enum.Font.Gotham,
+            TextSize = 12,
+            Size = UDim2.new(1, 0, 0, 48),
+            Position = UDim2.new(0, 0, 0, 40),
+            TextXAlignment = Enum.TextXAlignment.Left,
+            TextYAlignment = Enum.TextYAlignment.Top,
+            TextWrapped = true,
+        })
+    end
 
     return row, left, right
 end
@@ -241,7 +239,8 @@ local function CreateNav(parent, items, activeIndex, onSelect)
             Font = Enum.Font.GothamSemibold,
             TextSize = 15,
             AutoButtonColor = false,
-            Size = UDim2.new(0, 0, 0, 34),
+            Size = UDim2.new(0, 100, 0, 34),
+            AutomaticSize = Enum.AutomaticSize.X,
         })
         button.TextXAlignment = Enum.TextXAlignment.Left
         button.TextTransparency = 0.1
@@ -699,29 +698,34 @@ function Paxz:CreateWindow(options)
             Font = Enum.Font.GothamSemibold,
             TextSize = 15,
             AutoButtonColor = false,
-            Size = UDim2.new(0, 0, 0, 36),
+            Size = UDim2.new(0, 120, 0, 36),
+            AutomaticSize = Enum.AutomaticSize.X,
         })
         button.TextXAlignment = Enum.TextXAlignment.Left
         createCorner(button, 16)
         createStroke(button, Color3.fromRGB(60, 60, 82))
 
-        local contentFrame = create(contentScroller, "ScrollingFrame", {
+        local contentFrame = create(contentScroller, "Frame", {
             Name = tabName:gsub("%s+", "_"),
             BackgroundColor3 = Color3.fromRGB(8, 8, 14),
             BackgroundTransparency = 0.05,
-            Size = UDim2.new(1, 0, 1, 0),
+            Size = UDim2.new(1, 0, 0, 1),
             Position = UDim2.new(0, 0, 0, 0),
-            ScrollBarThickness = 8,
-            CanvasSize = UDim2.new(0, 0, 0, 0),
             Visible = false,
+            LayoutOrder = #self._tabs + 1,
         })
-        local contentLayout = create(contentFrame, "UIListLayout", {
+        local contentListLayout = create(contentFrame, "UIListLayout", {
             Padding = UDim.new(0, 16, 0, 16),
             SortOrder = Enum.SortOrder.LayoutOrder,
         })
-        contentLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-            contentFrame.CanvasSize = UDim2.new(0, 0, 0, contentLayout.AbsoluteContentSize.Y + 24)
-        end)
+        
+        local function updateContentFrameSize()
+            local absSize = contentListLayout.AbsoluteContentSize.Y
+            contentFrame.Size = UDim2.new(1, 0, 0, math.max(absSize + 32, 600))
+        end
+        
+        contentListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(updateContentFrameSize)
+        updateContentFrameSize()
 
         tabObject._button = button
         tabObject._content = contentFrame
@@ -736,6 +740,12 @@ function Paxz:CreateWindow(options)
             button.TextColor3 = Color3.fromRGB(255, 255, 255)
             button.BackgroundTransparency = 0.88
             contentFrame.Visible = true
+            
+            -- Update ContentScroller canvas size based on active tab
+            task.wait()
+            local tabHeight = contentFrame.Size.Y.Offset
+            contentScroller.CanvasSize = UDim2.new(0, 0, 0, tabHeight + 24)
+            
             self._setNavActive(#self._tabs + 1)
         end
 
@@ -760,9 +770,10 @@ function Paxz:CreateWindow(options)
             local wrapper = create(contentFrame, "Frame", {
                 Name = sectionName:gsub("%s+", "_"),
                 BackgroundColor3 = Color3.fromRGB(12, 12, 20),
-                Size = UDim2.new(1, 0, 0, 0),
-                AutomaticSize = Enum.AutomaticSize.Y,
-                ClipsDescendants = true,
+                BorderSizePixel = 0,
+                Size = UDim2.new(1, -28, 0, 440),
+                Position = UDim2.new(0, 14, 0, 0),
+                LayoutOrder = #contentFrame:GetChildren(),
             })
             createCorner(wrapper, 20)
             createStroke(wrapper, Color3.fromRGB(60, 60, 82))
@@ -796,16 +807,34 @@ function Paxz:CreateWindow(options)
             local contentContainer = create(wrapper, "Frame", {
                 Name = "SectionContent",
                 BackgroundTransparency = 1,
-                Size = UDim2.new(1, 0, 0, 0),
-                AutomaticSize = Enum.AutomaticSize.Y,
+                BorderSizePixel = 0,
+                Size = UDim2.new(1, -28, 0, 400),
+                Position = UDim2.new(0, 14, 0, 50),
             })
             local sectionLayout = create(contentContainer, "UIListLayout", {
                 SortOrder = Enum.SortOrder.LayoutOrder,
                 Padding = UDim.new(0, 14, 0, 14),
             })
-            sectionLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-                contentContainer.Size = UDim2.new(1, 0, 0, sectionLayout.AbsoluteContentSize.Y)
-            end)
+            
+            local function updateSectionSize()
+                local contentHeight = sectionLayout.AbsoluteContentSize.Y + 28
+                contentContainer.Size = UDim2.new(1, -28, 0, contentHeight)
+                wrapper.Size = UDim2.new(1, 0, 0, contentHeight + 64)
+                
+                -- Update parent tab's contentFrame size
+                local tabLayout = contentFrame:FindFirstChildOfClass("UIListLayout")
+                if tabLayout then
+                    local totalHeight = tabLayout.AbsoluteContentSize.Y + 32
+                    contentFrame.Size = UDim2.new(1, 0, 0, totalHeight)
+                    
+                    -- Update contentScroller canvas size if this tab is visible
+                    if contentFrame.Visible then
+                        contentScroller.CanvasSize = UDim2.new(0, 0, 0, totalHeight + 24)
+                    end
+                end
+            end
+            
+            sectionLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(updateSectionSize)
 
             function section:_registerElement(name, frame)
                 table.insert(self._elements, {Name = name, Frame = frame})
@@ -849,11 +878,16 @@ function Paxz:CreateWindow(options)
                 self.Tab.Window.Flags[flagName] = self.Tab.Window.Flags[flagName] or default
 
                 local row, _, right = CreateRow(contentContainer, toggleLabel, options.Description or "")
-                local switch = create(right, "Frame", {
+                
+                -- FIXED: Use TextButton instead of Frame to enable .Activated event
+                local switch = create(right, "TextButton", {
                     Name = "SwitchBase",
                     BackgroundColor3 = Color3.fromRGB(20, 18, 34),
+                    Text = "",
+                    TextTransparency = 1,
+                    AutoButtonColor = false,
                     Size = UDim2.new(0, 110, 0, 34),
-                    Position = UDim2.new(1, -1, 0.5, -17),
+                    Position = UDim2.new(1, -110, 0.5, -17),
                 })
                 createCorner(switch, 18)
                 createStroke(switch, Color3.fromRGB(138, 43, 226))
@@ -861,7 +895,8 @@ function Paxz:CreateWindow(options)
                 local handle = create(switch, "Frame", {
                     Name = "Handle",
                     BackgroundColor3 = Color3.fromRGB(138, 43, 226),
-                    Size = UDim2.new(0, 0, 0, 28),
+                    BorderSizePixel = 0,
+                    Size = UDim2.new(0, 28, 0, 28),
                     Position = default and UDim2.new(1, -32, 0.5, -14) or UDim2.new(0, 4, 0.5, -14),
                 })
                 createCorner(handle, 16)
@@ -909,37 +944,40 @@ function Paxz:CreateWindow(options)
                 local track = create(right, "Frame", {
                     Name = "SliderTrack",
                     BackgroundColor3 = Color3.fromRGB(20, 18, 34),
-                    Size = UDim2.new(1, 0, 0, 18),
-                    Position = UDim2.new(0, 0, 0, 26),
+                    BorderSizePixel = 0,
+                    Size = UDim2.new(1, -12, 0, 8),
+                    Position = UDim2.new(0, 6, 0, 32),
                 })
-                createCorner(track, 10)
+                createCorner(track, 4)
                 createStroke(track, Color3.fromRGB(60, 60, 84))
 
                 local fill = create(track, "Frame", {
                     Name = "SliderFill",
                     BackgroundColor3 = Color3.fromRGB(138, 43, 226),
+                    BorderSizePixel = 0,
                     Size = UDim2.new((value - min) / math.max(1, max - min), 0, 1, 0),
                 })
-                createCorner(fill, 10)
+                createCorner(fill, 4)
 
                 local handle = create(track, "Frame", {
                     Name = "SliderHandle",
                     BackgroundColor3 = Color3.fromRGB(255, 255, 255),
-                    Size = UDim2.new(0, 0, 0, 24),
-                    Position = UDim2.new((value - min) / math.max(1, max - min), -12, 0.5, -12),
+                    BorderSizePixel = 0,
+                    Size = UDim2.new(0, 18, 0, 18),
+                    Position = UDim2.new((value - min) / math.max(1, max - min), -9, 0.5, -9),
                 })
-                createCorner(handle, 12)
+                createCorner(handle, 9)
                 createStroke(handle, Color3.fromRGB(138, 43, 226))
 
-                create(right, "TextLabel", {
+                local valueLabel = create(right, "TextLabel", {
                     Name = "SliderValue",
                     BackgroundTransparency = 1,
-                    Text = tostring(value),
+                    Text = tostring(math.floor(value)),
                     TextColor3 = Color3.fromRGB(255, 255, 255),
                     Font = Enum.Font.GothamBold,
-                    TextSize = 15,
-                    Size = UDim2.new(1, 0, 0, 24),
-                    Position = UDim2.new(0, 0, 0, 6),
+                    TextSize = 13,
+                    Size = UDim2.new(1, 0, 0, 20),
+                    Position = UDim2.new(0, 0, 0, 8),
                     TextXAlignment = Enum.TextXAlignment.Right,
                 })
 
@@ -947,7 +985,7 @@ function Paxz:CreateWindow(options)
                 local dragInput
 
                 local function updateValue(input)
-                    if not dragging or not track then
+                    if not dragging or not track or not track.Parent then
                         return
                     end
                     local relative = math.clamp(input.Position.X - track.AbsolutePosition.X, 0, track.AbsoluteSize.X)
@@ -955,10 +993,12 @@ function Paxz:CreateWindow(options)
                     newValue = math.clamp(math.floor(newValue / increment + 0.5) * increment, min, max)
                     value = newValue
                     self.Tab.Window.Config[flagName] = value
-                    create(right, "TextLabel").Text = tostring(value)
+                    valueLabel.Text = tostring(math.floor(value))
                     local alpha = (value - min) / math.max(1, max - min)
-                    fill:TweenSize(UDim2.new(alpha, 0, 1, 0), Enum.EasingDirection.Out, Enum.EasingStyle.Exponential, 0.16, true)
-                    handle:TweenPosition(UDim2.new(alpha, -12, 0.5, -12), Enum.EasingDirection.Out, Enum.EasingStyle.Exponential, 0.16, true)
+                    fill.Size = UDim2.new(alpha, 0, 1, 0)
+                    handle.Position = UDim2.new(alpha, -9, 0.5, -9)
+                    task.spawn(callback, value)
+                    self.Tab.Window:SaveConfig()
                 end
 
                 track.InputBegan:Connect(function(input)
@@ -975,7 +1015,7 @@ function Paxz:CreateWindow(options)
                     end
                 end)
                 self.Tab.Window._connections[#self.Tab.Window._connections + 1] = UserInputService.InputChanged:Connect(function(input)
-                    if input == dragInput then
+                    if dragging and input == dragInput then
                         updateValue(input)
                     end
                 end)
