@@ -58,7 +58,7 @@ local function create(self, className, props)
             instance[property] = value
         end
     end
-    if self and self:IsA and self:IsA("Instance") then
+    if self and self.IsA and self:IsA("Instance") then
         instance.Parent = self
     end
     return instance
@@ -246,7 +246,6 @@ function Paxz:CreateWindow(options)
     local leftPanel = create(content, "Frame", {
         Name = "LeftPanel",
         BackgroundColor3 = Color3.fromRGB(12, 12, 12),
-        Size = UDim2.new(0, 0, 1, 0),
         Size = UDim2.new(0, 260, 1, 0),
         Position = UDim2.new(0, 0, 0, 0),
     })
