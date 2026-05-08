@@ -1,15 +1,14 @@
--- PaxzScriptz: High-performance Roblox UI Framework for modern executors
--- Designed for Rayfield + Cyberpunk visual language, mobile-compatible interactions,
--- and modular OOP structure using metatables for memory efficiency.
+-- PaxzScriptz: High-end Web Dashboard UI Library for Roblox
+-- Reworked for premium visual architecture, modern list-based layout,
+-- responsive scaling, top navigation, hero landing interface, and animated transitions.
 
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local HttpService = game:GetService("HttpService")
 local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
 local StarterGui = game:GetService("StarterGui")
-local LocalPlayer = Players.LocalPlayer
 local CoreGui = game:GetService("CoreGui")
+local LocalPlayer = Players.LocalPlayer
 
 local function safeCall(fn, ...)
     local success, result = pcall(fn, ...)
@@ -65,30 +64,201 @@ local function create(self, className, props)
 end
 
 local function tween(instance, properties, duration)
-    local info = TweenInfo.new(duration or 0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
+    local info = TweenInfo.new(duration or 0.26, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out)
     local tweenData = TweenService:Create(instance, info, properties)
     tweenData:Play()
     return tweenData
 end
 
-local function createStroke(parent, color)
-    return create(parent, "UIStroke", {
-        Color = color or Color3.fromRGB(160, 32, 240),
-        Thickness = 1,
-        Transparency = 0,
-        ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-    })
+local function createCorner(parent, radius)
+    return create(parent, "UICorner", {CornerRadius = UDim.new(0, radius or 12)})
 end
 
-local function createCorner(parent, radius)
-    return create(parent, "UICorner", {CornerRadius = UDim.new(0, radius or 8)})
+local function createStroke(parent, color)
+    return create(parent, "UIStroke", {
+        Color = color or Color3.fromRGB(138, 43, 226),
+        Thickness = 1,
+        Transparency = 0,
+        ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
+    })
 end
 
 local function createGradient(parent, color1, color2, rotation)
     return create(parent, "UIGradient", {
         Color = ColorSequence.new(color1, color2),
-        Rotation = rotation or 90
+        Rotation = rotation or 90,
     })
+end
+
+local function CreatePill(parent, text, status)
+    local accentColor = Color3.fromRGB(138, 43, 226)
+    if status == "WORKING" then
+        accentColor = Color3.fromRGB(0, 255, 127)
+    elseif status == "NOT WORKING" then
+        accentColor = Color3.fromRGB(255, 76, 76)
+    end
+
+    local pill = create(parent, "Frame", {
+        Name = "StatusPill",
+        BackgroundColor3 = Color3.fromRGB(14, 14, 22),
+        Size = UDim2.new(0, 0, 0, 28),
+        AutomaticSize = Enum.AutomaticSize.X,
+    })
+    createCorner(pill, 16)
+    createStroke(pill, accentColor)
+
+    create(pill, "TextLabel", {
+        Name = "PillLabel",
+        BackgroundTransparency = 1,
+        Text = text,
+        TextColor3 = accentColor,
+        Font = Enum.Font.GothamBold,
+        TextSize = 14,
+        Size = UDim2.new(1, -20, 1, 0),
+        Position = UDim2.new(0, 12, 0, 0),
+        TextXAlignment = Enum.TextXAlignment.Left,
+    })
+
+    return pill
+end
+
+local function CreateRow(parent, title, description)
+    local row = create(parent, "Frame", {
+        Name = title:gsub("%s+", "_"),
+        BackgroundColor3 = Color3.fromRGB(14, 14, 22),
+        Size = UDim2.new(1, 0, 0, 88),
+    })
+    createCorner(row, 18)
+    createStroke(row, Color3.fromRGB(60, 60, 82))
+
+    create(row, "Frame", {
+        Name = "RowBackground",
+        BackgroundTransparency = 1,
+        Size = UDim2.new(1, 0, 1, 0),
+        Position = UDim2.new(0, 0, 0, 0),
+    })
+
+    local left = create(row, "Frame", {
+        Name = "RowLeft",
+        BackgroundTransparency = 1,
+        Size = UDim2.new(0.64, 0, 1, 0),
+        Position = UDim2.new(0, 0, 0, 0),
+    })
+    local right = create(row, "Frame", {
+        Name = "RowRight",
+        BackgroundTransparency = 1,
+        Size = UDim2.new(0.36, 0, 1, 0),
+        Position = UDim2.new(0.64, 12, 0, 0),
+    })
+
+    create(left, "TextLabel", {
+        Name = "RowTitle",
+        BackgroundTransparency = 1,
+        Text = title,
+        TextColor3 = Color3.fromRGB(255, 255, 255),
+        Font = Enum.Font.GothamSemibold,
+        TextSize = 18,
+        Size = UDim2.new(1, 0, 0, 28),
+        Position = UDim2.new(0, 0, 0, 12),
+        TextXAlignment = Enum.TextXAlignment.Left,
+    })
+    create(left, "TextLabel", {
+        Name = "RowDescription",
+        BackgroundTransparency = 1,
+        Text = description or "",
+        TextColor3 = Color3.fromRGB(159, 162, 166),
+        Font = Enum.Font.Gotham,
+        TextSize = 14,
+        Size = UDim2.new(1, 0, 0, 36),
+        Position = UDim2.new(0, 0, 0, 38),
+        TextXAlignment = Enum.TextXAlignment.Left,
+        TextWrapped = true,
+    })
+
+    create(row, "Frame", {
+        Name = "RowDivider",
+        BackgroundColor3 = Color3.fromRGB(40, 40, 52),
+        Size = UDim2.new(1, 0, 0, 1),
+        Position = UDim2.new(0, 0, 1, -1),
+    })
+
+    return row, left, right
+end
+
+local function CreateNav(parent, items, activeIndex, onSelect)
+    local nav = create(parent, "Frame", {
+        Name = "NavList",
+        BackgroundTransparency = 1,
+        Size = UDim2.new(1, -48, 1, 0),
+        Position = UDim2.new(0, 24, 0, 0),
+    })
+    create(nav, "UIListLayout", {
+        FillDirection = Enum.FillDirection.Horizontal,
+        HorizontalAlignment = Enum.HorizontalAlignment.Right,
+        VerticalAlignment = Enum.VerticalAlignment.Center,
+        Padding = UDim.new(0, 22, 0, 0),
+        SortOrder = Enum.SortOrder.LayoutOrder,
+    })
+
+    local indicator = create(nav, "Frame", {
+        Name = "NavIndicator",
+        BackgroundColor3 = Color3.fromRGB(138, 43, 226),
+        Size = UDim2.new(0, 0, 0, 3),
+        Position = UDim2.new(1, 0, 1, -3),
+    })
+    createCorner(indicator, 2)
+
+    local buttons = {}
+
+    local function activate(index)
+        for i, button in ipairs(buttons) do
+            if i == index then
+                button.TextColor3 = Color3.fromRGB(255, 255, 255)
+                button.TextTransparency = 0
+                button.BackgroundTransparency = 0.88
+            else
+                button.TextColor3 = Color3.fromRGB(159, 162, 166)
+                button.TextTransparency = 0.1
+                button.BackgroundTransparency = 1
+            end
+        end
+
+        local selected = buttons[index]
+        if selected then
+            tween(indicator, {
+                Position = UDim2.new(selected.Position.X.Scale, selected.Position.X.Offset, 1, -3),
+                Size = UDim2.new(selected.Size.X.Scale, selected.Size.X.Offset, 0, 3),
+            }, 0.24)
+        end
+    end
+
+    for index, item in ipairs(items) do
+        local button = create(nav, "TextButton", {
+            Name = item.Text:gsub("%s+", "_"),
+            BackgroundTransparency = 1,
+            Text = (item.Icon and item.Icon .. " " or "") .. item.Text,
+            TextColor3 = Color3.fromRGB(159, 162, 166),
+            Font = Enum.Font.GothamSemibold,
+            TextSize = 15,
+            AutoButtonColor = false,
+            Size = UDim2.new(0, 0, 0, 34),
+        })
+        button.TextXAlignment = Enum.TextXAlignment.Left
+        button.TextTransparency = 0.1
+        button.ClipsDescendants = true
+
+        button.Activated:Connect(function()
+            if onSelect then
+                onSelect(index)
+            end
+            activate(index)
+        end)
+
+        table.insert(buttons, button)
+    end
+
+    activate(activeIndex or 1)
+    return nav, buttons, indicator, activate
 end
 
 local Paxz = {}
@@ -110,26 +280,10 @@ Section.__index = Section
 local Element = {}
 Element.__index = Element
 
-local function applyButtonEffects(button)
-    local defaultScale = button.Size
-    local hoverScale = UDim2.new(defaultScale.X.Scale, defaultScale.X.Offset + 4, defaultScale.Y.Scale, defaultScale.Y.Offset + 4)
-
-    local function onEnter()
-        tween(button, {Size = hoverScale}, 0.15)
-    end
-    local function onLeave()
-        tween(button, {Size = defaultScale}, 0.15)
-    end
-    button.MouseEnter:Connect(onEnter)
-    button.MouseLeave:Connect(onLeave)
-    button.TouchTap:Connect(onEnter)
-    return button
-end
-
 function Paxz:CreateWindow(options)
     options = options or {}
-    local title = options.Name or "PaxzScriptz"
-    local loadingTitle = options.LoadingTitle or "Initializing PaxzScriptz"
+    local title = options.Name or "Paxz Scriptz"
+    local loadingTitle = options.LoadingTitle or "Configure your dashboard"
     local configFolder = options.ConfigFolder or self.ConfigFolder
     local configFileName = title:gsub("%s+", "_") .. ".json"
     local configPath = configFolder .. "/" .. configFileName
@@ -146,15 +300,13 @@ function Paxz:CreateWindow(options)
     window._connections = {}
     window._searchables = {}
     window._tabs = {}
+    window._navButtons = {}
     window._selectedTab = nil
-    window._isDragging = false
     window._dragInput = nil
     window._dragStart = nil
     window._startPos = nil
     window._screenGui = nil
-    window._notificationQueue = {}
 
-    -- Create UI root
     local screenGui = create(nil, "ScreenGui", {
         Name = title:gsub("%s+", "_"),
         ResetOnSpawn = false,
@@ -166,183 +318,306 @@ function Paxz:CreateWindow(options)
         screenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
     end
 
-    -- Main window container
     local root = create(screenGui, "Frame", {
         Name = "PaxzRoot",
-        BackgroundColor3 = Color3.fromRGB(15, 15, 15),
+        BackgroundColor3 = Color3.fromRGB(10, 6, 18),
         BorderSizePixel = 0,
-        Size = UDim2.new(0, 850, 0, 520),
-        Position = UDim2.new(0.5, -425, 0.5, -260),
+        Size = UDim2.new(0.92, 0, 0.82, 0),
+        Position = UDim2.new(0.5, 0, 0.5, 0),
         AnchorPoint = Vector2.new(0.5, 0.5),
     })
-    createCorner(root, 16)
-    createStroke(root, Color3.fromRGB(160, 32, 240))
+    createCorner(root, 26)
+    createStroke(root, Color3.fromRGB(86, 30, 178))
+    createGradient(root, Color3.fromRGB(15, 5, 26), Color3.fromRGB(8, 0, 8), 165)
 
-    local header = create(root, "Frame", {
-        Name = "Header",
-        BackgroundTransparency = 1,
-        Size = UDim2.new(1, 0, 0, 72),
+    local backdrop = create(root, "Frame", {
+        Name = "Backdrop",
+        BackgroundTransparency = 0,
+        BackgroundColor3 = Color3.fromRGB(15, 8, 28),
+        Size = UDim2.new(1, 1, 1, 0),
         Position = UDim2.new(0, 0, 0, 0),
     })
-    local headerBg = create(header, "Frame", {
-        Name = "HeaderBg",
-        BackgroundColor3 = Color3.fromRGB(10, 10, 10),
-        Size = UDim2.new(1, 0, 1, 0),
+    createCorner(backdrop, 26)
+    createGradient(backdrop, Color3.fromRGB(14, 8, 28), Color3.fromRGB(3, 0, 8), 110)
+
+    local navBar = create(root, "Frame", {
+        Name = "NavBar",
+        BackgroundColor3 = Color3.fromRGB(8, 4, 18),
+        BackgroundTransparency = 0.2,
+        Size = UDim2.new(1, 0, 0, 52),
         Position = UDim2.new(0, 0, 0, 0),
     })
-    createCorner(headerBg, 16)
-    createStroke(headerBg, Color3.fromRGB(0, 255, 255))
-    createGradient(headerBg, Color3.fromRGB(24, 0, 60), Color3.fromRGB(10, 10, 10), 135)
+    createGradient(navBar, Color3.fromRGB(14, 6, 28), Color3.fromRGB(6, 2, 16), 90)
 
-    local titleLabel = create(header, "TextLabel", {
-        Name = "TitleLabel",
+    create(navBar, "TextLabel", {
+        Name = "BrandLabel",
         BackgroundTransparency = 1,
         Text = title,
         TextColor3 = Color3.fromRGB(255, 255, 255),
-        TextScaled = true,
         Font = Enum.Font.GothamBold,
-        Size = UDim2.new(0.45, 0, 0.5, 0),
-        Position = UDim2.new(0.025, 0, 0.15, 0),
+        TextSize = 17,
+        Size = UDim2.new(0.45, 0, 1, 0),
+        Position = UDim2.new(0.03, 0, 0, 0),
         TextXAlignment = Enum.TextXAlignment.Left,
     })
 
-    local subtitleLabel = create(header, "TextLabel", {
-        Name = "SubtitleLabel",
+    local navItems = {
+        {Text = "Home", Icon = "�"},
+        {Text = "Scripts", Icon = "??"},
+        {Text = "Executors", Icon = "?"},
+    }
+
+    local navContainer = create(navBar, "Frame", {
+        Name = "NavItems",
+        BackgroundTransparency = 1,
+        Size = UDim2.new(0.6, 0, 1, 0),
+        Position = UDim2.new(0.4, 0, 0, 0),
+    })
+    local _, _, navIndicator, setNavActive = CreateNav(navContainer, navItems, 1, function(index)
+        if window._tabs[index] then
+            window._tabs[index]:Select()
+        end
+    end)
+    window._navIndicator = navIndicator
+    window._setNavActive = setNavActive
+
+    local heroSection = create(root, "Frame", {
+        Name = "HeroSection",
+        BackgroundTransparency = 0.05,
+        BackgroundColor3 = Color3.fromRGB(8, 4, 14),
+        Size = UDim2.new(1, 0, 0, 220),
+        Position = UDim2.new(0, 0, 0, 54),
+    })
+    createCorner(heroSection, 24)
+    createGradient(heroSection, Color3.fromRGB(12, 6, 28), Color3.fromRGB(5, 0, 16), 135)
+
+    local heroContent = create(heroSection, "Frame", {
+        Name = "HeroContent",
+        BackgroundTransparency = 1,
+        Size = UDim2.new(1, -56, 1, -36),
+        Position = UDim2.new(0, 28, 0, 18),
+    })
+
+    create(heroContent, "TextLabel", {
+        Name = "HeroTitle",
+        BackgroundTransparency = 1,
+        Text = title,
+        TextColor3 = Color3.fromRGB(255, 255, 255),
+        Font = Enum.Font.GothamBlack,
+        TextSize = 40,
+        Size = UDim2.new(0.7, 0, 0, 48),
+        Position = UDim2.new(0, 0, 0, 0),
+        TextXAlignment = Enum.TextXAlignment.Left,
+    })
+
+    create(heroContent, "TextLabel", {
+        Name = "HeroSubtitle",
         BackgroundTransparency = 1,
         Text = loadingTitle,
-        TextColor3 = Color3.fromRGB(255, 255, 255),
-        TextTransparency = 0.3,
-        TextScaled = false,
+        TextColor3 = Color3.fromRGB(159, 162, 166),
         Font = Enum.Font.Gotham,
-        TextSize = 17,
-        Size = UDim2.new(0.35, 0, 0.3, 0),
-        Position = UDim2.new(0.025, 0, 0.55, 0),
+        TextSize = 16,
+        Size = UDim2.new(0.6, 0, 0, 28),
+        Position = UDim2.new(0, 0, 0, 52),
         TextXAlignment = Enum.TextXAlignment.Left,
     })
 
-    local searchBox = create(header, "TextBox", {
-        Name = "SearchBox",
-        BackgroundColor3 = Color3.fromRGB(22, 20, 40),
+    local buttonContainer = create(heroContent, "Frame", {
+        Name = "HeroButtons",
+        BackgroundTransparency = 1,
+        Size = UDim2.new(0.65, 0, 0, 52),
+        Position = UDim2.new(0, 0, 0, 96),
+    })
+    create(buttonContainer, "UIListLayout", {
+        FillDirection = Enum.FillDirection.Horizontal,
+        HorizontalAlignment = Enum.HorizontalAlignment.Left,
+        VerticalAlignment = Enum.VerticalAlignment.Center,
+        Padding = UDim.new(0, 18),
+    })
+
+    local primaryButton = create(buttonContainer, "TextButton", {
+        Name = "PrimaryAction",
+        BackgroundColor3 = Color3.fromRGB(138, 43, 226),
+        Text = "CONFIGURE NOW",
         TextColor3 = Color3.fromRGB(255, 255, 255),
-        TextTransparency = 0.2,
-        PlaceholderText = "Search tabs and controls...",
-        PlaceholderColor3 = Color3.fromRGB(200, 200, 200),
-        Font = Enum.Font.Gotham,
-        TextSize = 16,
-        Size = UDim2.new(0.4, 0, 0.45, 0),
-        Position = UDim2.new(0.55, 0, 0.25, 0),
-        ClearTextOnFocus = false,
+        Font = Enum.Font.GothamBold,
+        TextSize = 15,
+        Size = UDim2.new(0, 190, 0, 44),
+        AutoButtonColor = false,
     })
-    createCorner(searchBox, 12)
-    createStroke(searchBox, Color3.fromRGB(0, 255, 255))
+    createCorner(primaryButton, 20)
+    createStroke(primaryButton, Color3.fromRGB(255, 255, 255))
 
-    local content = create(root, "Frame", {
-        Name = "Content",
+    local secondaryButton = create(buttonContainer, "TextButton", {
+        Name = "DiscordAction",
+        BackgroundColor3 = Color3.fromRGB(24, 14, 44),
+        BackgroundTransparency = 0.15,
+        Text = "Join Discord",
+        TextColor3 = Color3.fromRGB(255, 255, 255),
+        Font = Enum.Font.GothamSemibold,
+        TextSize = 15,
+        Size = UDim2.new(0, 140, 0, 44),
+        AutoButtonColor = false,
+    })
+    createCorner(secondaryButton, 20)
+    createStroke(secondaryButton, Color3.fromRGB(138, 43, 226))
+
+    local statusList = create(heroContent, "Frame", {
+        Name = "StatusList",
         BackgroundTransparency = 1,
-        Size = UDim2.new(1, 0, 1, -72),
-        Position = UDim2.new(0, 0, 0, 72),
+        Size = UDim2.new(0.7, 0, 0, 36),
+        Position = UDim2.new(0, 0, 0, 152),
+    })
+    create(statusList, "UIListLayout", {
+        FillDirection = Enum.FillDirection.Horizontal,
+        HorizontalAlignment = Enum.HorizontalAlignment.Left,
+        VerticalAlignment = Enum.VerticalAlignment.Center,
+        Padding = UDim.new(0, 12),
     })
 
-    local leftPanel = create(content, "Frame", {
-        Name = "LeftPanel",
-        BackgroundColor3 = Color3.fromRGB(12, 12, 12),
-        Size = UDim2.new(0, 260, 1, 0),
-        Position = UDim2.new(0, 0, 0, 0),
-    })
-    createCorner(leftPanel, 16)
-    createStroke(leftPanel, Color3.fromRGB(160, 32, 240))
+    CreatePill(statusList, "WORKING", "WORKING")
+    CreatePill(statusList, "NOT WORKING", "NOT WORKING")
+    CreatePill(statusList, "WEB DASHBOARD", "OTHER")
 
-    local tabList = create(leftPanel, "ScrollingFrame", {
-        Name = "TabList",
+    local contentRoot = create(root, "Frame", {
+        Name = "ContentRoot",
         BackgroundTransparency = 1,
-        Size = UDim2.new(1, -20, 1, -20),
-        Position = UDim2.new(0, 10, 0, 10),
+        Size = UDim2.new(1, -48, 1, -310),
+        Position = UDim2.new(0, 24, 0, 284),
+    })
+
+    local contentScroller = create(contentRoot, "ScrollingFrame", {
+        Name = "ContentScroller",
+        BackgroundTransparency = 1,
+        Size = UDim2.new(1, 0, 1, 0),
+        ScrollBarThickness = 8,
         CanvasSize = UDim2.new(0, 0, 0, 0),
-        ScrollBarThickness = 6,
     })
-    local tabLayout = create(tabList, "UIListLayout", {
-        Padding = UDim.new(0, 8),
+    local contentLayout = create(contentScroller, "UIListLayout", {
+        Padding = UDim.new(0, 16, 0, 16),
         SortOrder = Enum.SortOrder.LayoutOrder,
     })
-    tabList:GetPropertyChangedSignal("CanvasSize"):Connect(function()
-        tabList.CanvasSize = UDim2.new(0, 0, 0, tabLayout.AbsoluteContentSize.Y + 12)
+    contentScroller:GetPropertyChangedSignal("CanvasSize"):Connect(function()
+        contentScroller.CanvasSize = UDim2.new(0, 0, 0, contentLayout.AbsoluteContentSize.Y + 24)
     end)
 
-    local tabIndicator = create(leftPanel, "Frame", {
-        Name = "TabIndicator",
-        BackgroundColor3 = Color3.fromRGB(160, 32, 240),
-        Size = UDim2.new(1, 0, 0, 4),
-        Position = UDim2.new(0, 0, 0, 0),
+    local searchBox = create(root, "TextBox", {
+        Name = "SearchBox",
+        BackgroundColor3 = Color3.fromRGB(18, 12, 34),
+        TextColor3 = Color3.fromRGB(255, 255, 255),
+        PlaceholderText = "Search tabs and controls...",
+        PlaceholderColor3 = Color3.fromRGB(159, 162, 166),
+        Font = Enum.Font.Gotham,
+        TextSize = 16,
+        Size = UDim2.new(0.32, 0, 0, 44),
+        Position = UDim2.new(0.03, 0, 0.83, 0),
+        ClearTextOnFocus = false,
     })
-    createCorner(tabIndicator, 4)
+    createCorner(searchBox, 18)
+    createStroke(searchBox, Color3.fromRGB(138, 43, 226))
 
-    local tabContent = create(content, "Frame", {
-        Name = "TabContent",
-        BackgroundColor3 = Color3.fromRGB(18, 18, 18),
-        Size = UDim2.new(1, -280, 1, 0),
-        Position = UDim2.new(0, 280, 0, 0),
-    })
-    createCorner(tabContent, 16)
-    createStroke(tabContent, Color3.fromRGB(0, 255, 255))
-    local contentLayout = create(tabContent, "UIListLayout", {
-        Padding = UDim.new(0, 12),
-        SortOrder = Enum.SortOrder.LayoutOrder,
-    })
-
-    -- Loading overlay
-    local loadingOverlay = create(root, "Frame", {
-        Name = "LoadingOverlay",
-        BackgroundColor3 = Color3.fromRGB(6, 6, 6),
-        BackgroundTransparency = 0.1,
-        Size = UDim2.new(1, 1, 1, 0),
+    local landingOverlay = create(root, "Frame", {
+        Name = "LandingOverlay",
+        BackgroundColor3 = Color3.fromRGB(8, 4, 16),
+        BackgroundTransparency = 0.02,
+        Size = UDim2.new(1, 0, 1, 0),
         Position = UDim2.new(0, 0, 0, 0),
         ZIndex = 10,
     })
-    createCorner(loadingOverlay, 16)
+    createCorner(landingOverlay, 26)
+    createGradient(landingOverlay, Color3.fromRGB(15, 5, 32), Color3.fromRGB(0, 0, 0), 140)
 
-    local loadingCenter = create(loadingOverlay, "Frame", {
-        Name = "LoadingCenter",
-        BackgroundColor3 = Color3.fromRGB(20, 10, 40),
-        Size = UDim2.new(0, 0, 0, 120),
-        Position = UDim2.new(0.5, 0, 0.4, 0),
+    local landingCard = create(landingOverlay, "Frame", {
+        Name = "LandingCard",
+        BackgroundColor3 = Color3.fromRGB(10, 5, 22),
+        BackgroundTransparency = 0,
+        Size = UDim2.new(0, 620, 0, 260),
+        Position = UDim2.new(0.5, 0, 0.5, 0),
         AnchorPoint = Vector2.new(0.5, 0.5),
     })
-    loadingCenter.Size = UDim2.new(0, 460, 0, 120)
-    createCorner(loadingCenter, 16)
-    createStroke(loadingCenter, Color3.fromRGB(160, 32, 240))
+    createCorner(landingCard, 26)
+    createStroke(landingCard, Color3.fromRGB(138, 43, 226))
+    createGradient(landingCard, Color3.fromRGB(14, 6, 28), Color3.fromRGB(8, 4, 16), 90)
 
-    local loadingText = create(loadingCenter, "TextLabel", {
-        Name = "LoadingText",
+    create(landingCard, "TextLabel", {
+        Name = "LandingTitle",
         BackgroundTransparency = 1,
-        Text = loadingTitle,
+        Text = "Paxz Scriptz",
         TextColor3 = Color3.fromRGB(255, 255, 255),
-        Font = Enum.Font.GothamBold,
-        TextSize = 20,
-        Size = UDim2.new(1, -24, 0, 30),
-        Position = UDim2.new(0, 0, 0.15, 0),
+        Font = Enum.Font.GothamBlack,
+        TextSize = 36,
+        Size = UDim2.new(1, -48, 0, 52),
+        Position = UDim2.new(0, 0.03, 0, 22),
         TextXAlignment = Enum.TextXAlignment.Left,
     })
 
-    local loadingBar = create(loadingCenter, "Frame", {
-        Name = "LoadingBar",
-        BackgroundColor3 = Color3.fromRGB(30, 30, 30),
-        Size = UDim2.new(1, -24, 0, 22),
-        Position = UDim2.new(0, 0, 0.6, 0),
+    create(landingCard, "TextLabel", {
+        Name = "LandingDescription",
+        BackgroundTransparency = 1,
+        Text = "A premium dashboard experience for modern Roblox executors.",
+        TextColor3 = Color3.fromRGB(159, 162, 166),
+        Font = Enum.Font.Gotham,
+        TextSize = 16,
+        Size = UDim2.new(0.95, 0, 0, 36),
+        Position = UDim2.new(0, 0.03, 0, 88),
+        TextXAlignment = Enum.TextXAlignment.Left,
+        TextWrapped = true,
     })
-    createCorner(loadingBar, 12)
-    createStroke(loadingBar, Color3.fromRGB(0, 255, 255))
 
-    local loadingProgress = create(loadingBar, "Frame", {
-        Name = "LoadingProgress",
-        BackgroundColor3 = Color3.fromRGB(160, 32, 240),
-        Size = UDim2.new(0, 0, 1, 0),
+    local landingActions = create(landingCard, "Frame", {
+        Name = "LandingActions",
+        BackgroundTransparency = 1,
+        Size = UDim2.new(0.95, 0, 0, 56),
+        Position = UDim2.new(0, 0.03, 0, 154),
     })
-    createCorner(loadingProgress, 12)
+    create(landingActions, "UIListLayout", {
+        FillDirection = Enum.FillDirection.Horizontal,
+        HorizontalAlignment = Enum.HorizontalAlignment.Left,
+        VerticalAlignment = Enum.VerticalAlignment.Center,
+        Padding = UDim.new(0, 20),
+    })
 
-    local function registerConnection(signal)
-        table.insert(window._connections, signal)
-        return signal
+    local configureButton = create(landingActions, "TextButton", {
+        Name = "ConfigureNow",
+        BackgroundColor3 = Color3.fromRGB(138, 43, 226),
+        Text = "CONFIGURE NOW",
+        TextColor3 = Color3.fromRGB(255, 255, 255),
+        Font = Enum.Font.GothamBold,
+        TextSize = 15,
+        Size = UDim2.new(0, 220, 0, 48),
+        AutoButtonColor = false,
+    })
+    createCorner(configureButton, 24)
+    createStroke(configureButton, Color3.fromRGB(255, 255, 255))
+
+    local discordButton = create(landingActions, "TextButton", {
+        Name = "DiscordButton",
+        BackgroundColor3 = Color3.fromRGB(20, 12, 40),
+        BackgroundTransparency = 0.16,
+        Text = "Discord",
+        TextColor3 = Color3.fromRGB(255, 255, 255),
+        Font = Enum.Font.GothamSemibold,
+        TextSize = 15,
+        Size = UDim2.new(0, 140, 0, 48),
+        AutoButtonColor = false,
+    })
+    createCorner(discordButton, 24)
+    createStroke(discordButton, Color3.fromRGB(138, 43, 226))
+
+    local function closeLanding()
+        tween(landingOverlay, {BackgroundTransparency = 1}, 0.32)
+        tween(landingCard, {BackgroundTransparency = 1}, 0.32)
+        task.delay(0.34, function()
+            if landingOverlay and landingOverlay.Parent then
+                landingOverlay:Destroy()
+            end
+        end)
     end
+
+    configureButton.Activated:Connect(closeLanding)
+    discordButton.Activated:Connect(function()
+        window:JoinDiscord(options.DiscordInvite or "PaxzHub")
+    end)
 
     function window:_saveConfig()
         local encoded = HttpService:JSONEncode(self.Config)
@@ -407,78 +682,66 @@ function Paxz:CreateWindow(options)
         Paxz:JoinDiscord(inviteCode)
     end
 
-    function window:CreateTab(tabName, imageId)
+    function window:CreateTab(tabName, icon)
         local tabObject = setmetatable({}, Tab)
         tabObject.Name = tabName
+        tabObject.Icon = icon
         tabObject.Window = self
         tabObject._sections = {}
         tabObject._button = nil
         tabObject._content = nil
 
-        local button = create(tabList, "TextButton", {
+        local button = create(navContainer, "TextButton", {
             Name = tabName:gsub("%s+", "_"),
-            BackgroundColor3 = Color3.fromRGB(15, 15, 15),
-            Text = " " .. tabName,
-            TextColor3 = Color3.fromRGB(255, 255, 255),
-            Font = Enum.Font.GothamBold,
-            TextSize = 18,
+            BackgroundTransparency = 1,
+            Text = ((icon and icon .. " ") or "") .. tabName,
+            TextColor3 = Color3.fromRGB(159, 162, 166),
+            Font = Enum.Font.GothamSemibold,
+            TextSize = 15,
             AutoButtonColor = false,
-            Size = UDim2.new(1, 0, 0, 48),
-            TextXAlignment = Enum.TextXAlignment.Left,
-            TextWrapped = true,
-            ClipsDescendants = true,
+            Size = UDim2.new(0, 0, 0, 36),
         })
-        createCorner(button, 12)
-        createStroke(button, Color3.fromRGB(0, 255, 255))
-        local icon = create(button, "ImageLabel", {
-            Name = "Icon",
-            BackgroundTransparency = 1,
-            Image = imageId or "",
-            Size = UDim2.new(0, 0, 0, 32),
-            Position = UDim2.new(0, 12, 0.5, -16),
-            ScaleType = Enum.ScaleType.Fit,
-        })
-        if imageId then
-            icon.Size = UDim2.new(0, 0, 0, 32)
-        end
-        local textPadding = create(button, "UIPadding", {PaddingLeft = UDim.new(0, 52, 0, 0)})
+        button.TextXAlignment = Enum.TextXAlignment.Left
+        createCorner(button, 16)
+        createStroke(button, Color3.fromRGB(60, 60, 82))
 
-        local contentFrame = create(tabContent, "ScrollingFrame", {
+        local contentFrame = create(contentScroller, "ScrollingFrame", {
             Name = tabName:gsub("%s+", "_"),
-            BackgroundTransparency = 1,
-            Size = UDim2.new(1, 1, 1, 0),
+            BackgroundColor3 = Color3.fromRGB(8, 8, 14),
+            BackgroundTransparency = 0.05,
+            Size = UDim2.new(1, 0, 1, 0),
             Position = UDim2.new(0, 0, 0, 0),
-            CanvasSize = UDim2.new(0, 0, 0, 0),
             ScrollBarThickness = 8,
+            CanvasSize = UDim2.new(0, 0, 0, 0),
             Visible = false,
         })
-        local layout = create(contentFrame, "UIListLayout", {
-            Padding = UDim.new(0, 14),
+        local contentLayout = create(contentFrame, "UIListLayout", {
+            Padding = UDim.new(0, 16, 0, 16),
             SortOrder = Enum.SortOrder.LayoutOrder,
         })
-        contentFrame:GetPropertyChangedSignal("CanvasSize"):Connect(function()
-            contentFrame.CanvasSize = UDim2.new(0, 0, 0, layout.AbsoluteContentSize.Y + 16)
+        contentLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+            contentFrame.CanvasSize = UDim2.new(0, 0, 0, contentLayout.AbsoluteContentSize.Y + 24)
         end)
 
         tabObject._button = button
         tabObject._content = contentFrame
-        tabObject._indicator = tabIndicator
 
         local function selectTab()
             if self._selectedTab then
-                self._selectedTab._button.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
-                self._selectedTab._button.TextTransparency = 0.2
+                self._selectedTab._button.TextColor3 = Color3.fromRGB(159, 162, 166)
+                self._selectedTab._button.BackgroundTransparency = 1
                 self._selectedTab._content.Visible = false
             end
             self._selectedTab = tabObject
-            button.BackgroundColor3 = Color3.fromRGB(30, 10, 90)
-            button.TextTransparency = 0
+            button.TextColor3 = Color3.fromRGB(255, 255, 255)
+            button.BackgroundTransparency = 0.88
             contentFrame.Visible = true
-            tween(tabIndicator, {Position = UDim2.new(0, 0, 0, button.AbsolutePosition.Y - tabList.AbsolutePosition.Y)}, 0.2)
+            self._setNavActive(#self._tabs + 1)
         end
 
         table.insert(self._tabs, tabObject)
-        self._createSearchable(tabName, button)
+        table.insert(self._navButtons, button)
+        self:_createSearchable(tabName, contentFrame)
 
         self._connections[#self._connections + 1] = button.Activated:Connect(function()
             selectTab()
@@ -496,28 +759,37 @@ function Paxz:CreateWindow(options)
 
             local wrapper = create(contentFrame, "Frame", {
                 Name = sectionName:gsub("%s+", "_"),
-                BackgroundColor3 = Color3.fromRGB(14, 14, 14),
+                BackgroundColor3 = Color3.fromRGB(12, 12, 20),
                 Size = UDim2.new(1, 0, 0, 0),
                 AutomaticSize = Enum.AutomaticSize.Y,
                 ClipsDescendants = true,
             })
-            createCorner(wrapper, 14)
-            createStroke(wrapper, Color3.fromRGB(160, 32, 240))
+            createCorner(wrapper, 20)
+            createStroke(wrapper, Color3.fromRGB(60, 60, 82))
 
             local header = create(wrapper, "Frame", {
                 Name = "SectionHeader",
                 BackgroundTransparency = 1,
-                Size = UDim2.new(1, 0, 0, 42),
+                Size = UDim2.new(1, 0, 0, 44),
             })
-            local sectionLabel = create(header, "TextLabel", {
+            local accent = create(header, "Frame", {
+                Name = "AccentBar",
+                BackgroundColor3 = Color3.fromRGB(138, 43, 226),
+                Size = UDim2.new(0, 0, 1, 0),
+                Position = UDim2.new(0, 0, 0, 0),
+            })
+            accent.Size = UDim2.new(0, 4, 0, 28)
+            accent.Position = UDim2.new(0.02, 0, 0.1, 0)
+
+            create(header, "TextLabel", {
                 Name = "SectionLabel",
                 BackgroundTransparency = 1,
                 Text = sectionName,
                 TextColor3 = Color3.fromRGB(255, 255, 255),
-                Font = Enum.Font.GothamSemibold,
+                Font = Enum.Font.GothamBold,
                 TextSize = 18,
-                Size = UDim2.new(1, -24, 1, -8),
-                Position = UDim2.new(0, 12, 0, 8),
+                Size = UDim2.new(1, -36, 1, 0),
+                Position = UDim2.new(0.06, 0, 0, 8),
                 TextXAlignment = Enum.TextXAlignment.Left,
             })
 
@@ -529,7 +801,7 @@ function Paxz:CreateWindow(options)
             })
             local sectionLayout = create(contentContainer, "UIListLayout", {
                 SortOrder = Enum.SortOrder.LayoutOrder,
-                Padding = UDim.new(0, 10),
+                Padding = UDim.new(0, 14, 0, 14),
             })
             sectionLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
                 contentContainer.Size = UDim2.new(1, 0, 0, sectionLayout.AbsoluteContentSize.Y)
@@ -537,7 +809,7 @@ function Paxz:CreateWindow(options)
 
             function section:_registerElement(name, frame)
                 table.insert(self._elements, {Name = name, Frame = frame})
-                self.Tab.Window._createSearchable(name, frame)
+                self.Tab.Window:_createSearchable(name, frame)
             end
 
             function section:CreateButton(options)
@@ -545,28 +817,27 @@ function Paxz:CreateWindow(options)
                 local buttonLabel = options.Name or "Button"
                 local callback = options.Callback or function() end
 
-                local buttonFrame = create(contentContainer, "TextButton", {
+                local row, _, right = CreateRow(contentContainer, buttonLabel, options.Description or "")
+                local buttonFrame = create(right, "TextButton", {
                     Name = buttonLabel:gsub("%s+", "_"),
-                    BackgroundColor3 = Color3.fromRGB(20, 10, 40),
-                    Text = buttonLabel,
+                    BackgroundColor3 = Color3.fromRGB(18, 14, 30),
+                    Text = "Launch",
                     TextColor3 = Color3.fromRGB(255, 255, 255),
                     Font = Enum.Font.GothamBold,
-                    TextSize = 17,
-                    Size = UDim2.new(1, 0, 0, 48),
+                    TextSize = 15,
+                    Size = UDim2.new(1, 0, 0, 42),
                     AutoButtonColor = false,
                 })
-                createCorner(buttonFrame, 12)
-                createStroke(buttonFrame, Color3.fromRGB(0, 255, 255))
-                createGradient(buttonFrame, Color3.fromRGB(80, 10, 140), Color3.fromRGB(20, 10, 40), 180)
+                createCorner(buttonFrame, 18)
+                createStroke(buttonFrame, Color3.fromRGB(138, 43, 226))
 
-                applyButtonEffects(buttonFrame)
-
-                local conn = buttonFrame.Activated:Connect(function()
+                buttonFrame.Activated:Connect(function()
                     task.spawn(callback)
                 end)
-                table.insert(self.Tab.Window._connections, conn)
-                self:_registerElement(buttonLabel, buttonFrame)
-                return buttonFrame
+
+                self.Tab.Window._connections[#self.Tab.Window._connections + 1] = buttonFrame.Activated
+                self:_registerElement(buttonLabel, row)
+                return row
             end
 
             function section:CreateToggle(options)
@@ -577,53 +848,28 @@ function Paxz:CreateWindow(options)
                 local default = options.Default and true or false
                 self.Tab.Window.Flags[flagName] = self.Tab.Window.Flags[flagName] or default
 
-                local wrapperFrame = create(contentContainer, "Frame", {
-                    Name = toggleLabel:gsub("%s+", "_"),
-                    BackgroundColor3 = Color3.fromRGB(20, 10, 40),
-                    Size = UDim2.new(1, 0, 0, 54),
+                local row, _, right = CreateRow(contentContainer, toggleLabel, options.Description or "")
+                local switch = create(right, "Frame", {
+                    Name = "SwitchBase",
+                    BackgroundColor3 = Color3.fromRGB(20, 18, 34),
+                    Size = UDim2.new(0, 110, 0, 34),
+                    Position = UDim2.new(1, -1, 0.5, -17),
                 })
-                createCorner(wrapperFrame, 12)
-                createStroke(wrapperFrame, Color3.fromRGB(0, 255, 255))
-
-                local label = create(wrapperFrame, "TextLabel", {
-                    Name = "ToggleText",
-                    BackgroundTransparency = 1,
-                    Text = toggleLabel,
-                    TextColor3 = Color3.fromRGB(255, 255, 255),
-                    Font = Enum.Font.GothamSemibold,
-                    TextSize = 17,
-                    Size = UDim2.new(0.7, 0, 1, 0),
-                    Position = UDim2.new(0.03, 0, 0, 0),
-                    TextXAlignment = Enum.TextXAlignment.Left,
-                })
-                local switch = create(wrapperFrame, "Frame", {
-                    Name = "Switch",
-                    BackgroundColor3 = Color3.fromRGB(30, 30, 30),
-                    Size = UDim2.new(0, 0, 0, 24),
-                    Position = UDim2.new(0.75, 0, 0.5, -12),
-                })
-                switch.Size = UDim2.new(0, 54, 0, 24)
-                createCorner(switch, 12)
-                createStroke(switch, Color3.fromRGB(160, 32, 240))
+                createCorner(switch, 18)
+                createStroke(switch, Color3.fromRGB(138, 43, 226))
 
                 local handle = create(switch, "Frame", {
                     Name = "Handle",
-                    BackgroundColor3 = Color3.fromRGB(160, 32, 240),
-                    Size = UDim2.new(0, 0, 0, 20),
-                    Position = UDim2.new(default and 1 or 0, default and -20 or 4, 0.5, -10),
+                    BackgroundColor3 = Color3.fromRGB(138, 43, 226),
+                    Size = UDim2.new(0, 0, 0, 28),
+                    Position = default and UDim2.new(1, -32, 0.5, -14) or UDim2.new(0, 4, 0.5, -14),
                 })
-                createCorner(handle, 12)
-                local glow = create(handle, "UIStroke", {
-                    Color = Color3.fromRGB(0, 255, 255),
-                    Thickness = 1,
-                    Transparency = 0.3,
-                })
+                createCorner(handle, 16)
 
                 local function setState(value)
                     self.Tab.Window.Flags[flagName] = value
-                    local pos = value and UDim2.new(1, -20, 0.5, -10) or UDim2.new(0, 4, 0.5, -10)
-                    tween(handle, {Position = pos}, 0.18)
-                    tween(handle, {BackgroundColor3 = value and Color3.fromRGB(0, 255, 255) or Color3.fromRGB(160, 32, 240)}, 0.18)
+                    local target = value and UDim2.new(1, -32, 0.5, -14) or UDim2.new(0, 4, 0.5, -14)
+                    tween(handle, {Position = target}, 0.2)
                     task.spawn(callback, value)
                     self.Tab.Window:SaveConfig()
                 end
@@ -632,18 +878,18 @@ function Paxz:CreateWindow(options)
                     setState(not self.Tab.Window.Flags[flagName])
                 end
 
-                wrapperFrame.Activated:Connect(toggleState)
-                wrapperFrame.InputBegan:Connect(function(input)
+                switch.Activated:Connect(toggleState)
+                switch.InputBegan:Connect(function(input)
                     if input.UserInputType == Enum.UserInputType.Touch then
                         toggleState()
                     end
                 end)
 
-                self:_registerElement(toggleLabel, wrapperFrame)
+                self:_registerElement(toggleLabel, row)
                 if default then
                     setState(default)
                 end
-                return wrapperFrame
+                return row
             end
 
             function section:CreateSlider(options)
@@ -659,89 +905,67 @@ function Paxz:CreateWindow(options)
                 value = math.clamp(value, min, max)
                 self.Tab.Window.Config[flagName] = value
 
-                local frame = create(contentContainer, "Frame", {
-                    Name = sliderLabel:gsub("%s+", "_"),
-                    BackgroundColor3 = Color3.fromRGB(20, 10, 40),
-                    Size = UDim2.new(1, 0, 0, 82),
+                local row, _, right = CreateRow(contentContainer, sliderLabel, options.Description or "")
+                local track = create(right, "Frame", {
+                    Name = "SliderTrack",
+                    BackgroundColor3 = Color3.fromRGB(20, 18, 34),
+                    Size = UDim2.new(1, 0, 0, 18),
+                    Position = UDim2.new(0, 0, 0, 26),
                 })
-                createCorner(frame, 12)
-                createStroke(frame, Color3.fromRGB(0, 255, 255))
+                createCorner(track, 10)
+                createStroke(track, Color3.fromRGB(60, 60, 84))
 
-                local title = create(frame, "TextLabel", {
-                    Name = "SliderName",
-                    BackgroundTransparency = 1,
-                    Text = sliderLabel,
-                    TextColor3 = Color3.fromRGB(255, 255, 255),
-                    Font = Enum.Font.GothamSemibold,
-                    TextSize = 17,
-                    Size = UDim2.new(0.7, 0, 0, 26),
-                    Position = UDim2.new(0.03, 0, 0.05, 0),
-                    TextXAlignment = Enum.TextXAlignment.Left,
+                local fill = create(track, "Frame", {
+                    Name = "SliderFill",
+                    BackgroundColor3 = Color3.fromRGB(138, 43, 226),
+                    Size = UDim2.new((value - min) / math.max(1, max - min), 0, 1, 0),
                 })
-                local valueLabel = create(frame, "TextLabel", {
+                createCorner(fill, 10)
+
+                local handle = create(track, "Frame", {
+                    Name = "SliderHandle",
+                    BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+                    Size = UDim2.new(0, 0, 0, 24),
+                    Position = UDim2.new((value - min) / math.max(1, max - min), -12, 0.5, -12),
+                })
+                createCorner(handle, 12)
+                createStroke(handle, Color3.fromRGB(138, 43, 226))
+
+                create(right, "TextLabel", {
                     Name = "SliderValue",
                     BackgroundTransparency = 1,
                     Text = tostring(value),
                     TextColor3 = Color3.fromRGB(255, 255, 255),
-                    Font = Enum.Font.Gotham,
-                    TextSize = 16,
-                    Size = UDim2.new(0.25, -12, 0, 24),
-                    Position = UDim2.new(0.72, 0, 0.05, 0),
+                    Font = Enum.Font.GothamBold,
+                    TextSize = 15,
+                    Size = UDim2.new(1, 0, 0, 24),
+                    Position = UDim2.new(0, 0, 0, 6),
                     TextXAlignment = Enum.TextXAlignment.Right,
                 })
 
-                local track = create(frame, "Frame", {
-                    Name = "Track",
-                    BackgroundColor3 = Color3.fromRGB(30, 30, 30),
-                    Size = UDim2.new(0.94, 0, 0, 14),
-                    Position = UDim2.new(0.03, 0, 0.45, 0),
-                })
-                createCorner(track, 12)
-                createStroke(track, Color3.fromRGB(160, 32, 240))
+                local dragging = false
+                local dragInput
 
-                local fill = create(track, "Frame", {
-                    Name = "Fill",
-                    BackgroundColor3 = Color3.fromRGB(160, 32, 240),
-                    Size = UDim2.new((value - min) / math.max(1, max - min), 0, 1, 0),
-                })
-                createCorner(fill, 12)
-
-                local handle = create(track, "Frame", {
-                    Name = "Handle",
-                    BackgroundColor3 = Color3.fromRGB(0, 255, 255),
-                    Size = UDim2.new(0, 0, 0, 22),
-                    Position = UDim2.new((value - min) / math.max(1, max - min), -11, 0.5, -11),
-                })
-                createCorner(handle, 12)
-                createStroke(handle, Color3.fromRGB(255, 255, 255))
-
-                local function setSlider(newValue)
+                local function updateValue(input)
+                    if not dragging or not track then
+                        return
+                    end
+                    local relative = math.clamp(input.Position.X - track.AbsolutePosition.X, 0, track.AbsoluteSize.X)
+                    local newValue = min + ((relative / track.AbsoluteSize.X) * (max - min))
                     newValue = math.clamp(math.floor(newValue / increment + 0.5) * increment, min, max)
                     value = newValue
                     self.Tab.Window.Config[flagName] = value
-                    valueLabel.Text = tostring(value)
+                    create(right, "TextLabel").Text = tostring(value)
                     local alpha = (value - min) / math.max(1, max - min)
-                    fill:TweenSize(UDim2.new(alpha, 0, 1, 0), Enum.EasingDirection.Out, Enum.EasingStyle.Quint, 0.12, true)
-                    handle:TweenPosition(UDim2.new(alpha, -11, 0.5, -11), Enum.EasingDirection.Out, Enum.EasingStyle.Quint, 0.12, true)
-                    task.spawn(callback, value)
-                    self.Tab.Window:SaveConfig()
-                end
-
-                local dragging = false
-                local dragInput = nil
-                local function onInputChanged(input)
-                    if input == dragInput and dragging then
-                        local relative = input.Position.X - track.AbsolutePosition.X
-                        local newValue = min + ((relative / track.AbsoluteSize.X) * (max - min))
-                        setSlider(newValue)
-                    end
+                    fill:TweenSize(UDim2.new(alpha, 0, 1, 0), Enum.EasingDirection.Out, Enum.EasingStyle.Exponential, 0.16, true)
+                    handle:TweenPosition(UDim2.new(alpha, -12, 0.5, -12), Enum.EasingDirection.Out, Enum.EasingStyle.Exponential, 0.16, true)
                 end
 
                 track.InputBegan:Connect(function(input)
                     if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
                         dragging = true
                         dragInput = input
-                        onInputChanged(input)
+                        updateValue(input)
                     end
                 end)
                 track.InputEnded:Connect(function(input)
@@ -750,18 +974,14 @@ function Paxz:CreateWindow(options)
                         dragInput = nil
                     end
                 end)
-                self.Tab.Window._connections[#self.Tab.Window._connections + 1] = UserInputService.InputChanged:Connect(onInputChanged)
-                frame.InputBegan:Connect(function(input)
-                    if input.UserInputType == Enum.UserInputType.Touch then
-                        dragging = true
-                        dragInput = input
-                        onInputChanged(input)
+                self.Tab.Window._connections[#self.Tab.Window._connections + 1] = UserInputService.InputChanged:Connect(function(input)
+                    if input == dragInput then
+                        updateValue(input)
                     end
                 end)
 
-                self:_registerElement(sliderLabel, frame)
-                setSlider(value)
-                return frame
+                self:_registerElement(sliderLabel, row)
+                return row
             end
 
             function section:CreateDropdown(options)
@@ -777,59 +997,45 @@ function Paxz:CreateWindow(options)
                 end
                 self.Tab.Window.Config[flagName] = selections
 
-                local wrapper = create(contentContainer, "Frame", {
-                    Name = title:gsub("%s+", "_"),
-                    BackgroundColor3 = Color3.fromRGB(20, 10, 40),
-                    Size = UDim2.new(1, 0, 0, 52),
-                    ClipsDescendants = true,
-                })
-                createCorner(wrapper, 12)
-                createStroke(wrapper, Color3.fromRGB(0, 255, 255))
-
-                local label = create(wrapper, "TextLabel", {
-                    Name = "DropdownLabel",
-                    BackgroundTransparency = 1,
-                    Text = title,
-                    TextColor3 = Color3.fromRGB(255, 255, 255),
-                    Font = Enum.Font.GothamSemibold,
-                    TextSize = 17,
-                    Size = UDim2.new(0.7, 0, 1, 0),
-                    Position = UDim2.new(0.03, 0, 0, 0),
-                    TextXAlignment = Enum.TextXAlignment.Left,
-                })
-
-                local selectedLabel = create(wrapper, "TextLabel", {
+                local row, _, right = CreateRow(contentContainer, title, options.Description or "")
+                local selectedLabel = create(right, "TextLabel", {
                     Name = "SelectedLabel",
                     BackgroundTransparency = 1,
                     Text = multi and "Select options..." or "Choose an option...",
-                    TextColor3 = Color3.fromRGB(200, 200, 200),
+                    TextColor3 = Color3.fromRGB(159, 162, 166),
                     Font = Enum.Font.Gotham,
-                    TextSize = 15,
-                    Size = UDim2.new(0.4, 0, 1, 0),
-                    Position = UDim2.new(0.65, 0, 0, 0),
+                    TextSize = 14,
+                    Size = UDim2.new(1, 0, 0, 24),
+                    Position = UDim2.new(0, 0, 0, 8),
                     TextXAlignment = Enum.TextXAlignment.Right,
                 })
 
-                local indicator = create(wrapper, "ImageLabel", {
-                    Name = "Indicator",
+                create(right, "TextLabel", {
+                    Name = "DropdownArrow",
                     BackgroundTransparency = 1,
-                    Image = "rbxassetid://3926305904",
-                    Size = UDim2.new(0, 16, 0, 16),
-                    Position = UDim2.new(0.95, -18, 0.5, -8),
-                    ImageColor3 = Color3.fromRGB(160, 32, 240),
+                    Text = "?",
+                    TextColor3 = Color3.fromRGB(138, 43, 226),
+                    Font = Enum.Font.GothamBold,
+                    TextSize = 16,
+                    Size = UDim2.new(0, 24, 0, 24),
+                    Position = UDim2.new(1, -24, 0, 8),
+                    TextXAlignment = Enum.TextXAlignment.Center,
                 })
 
-                local listFrame = create(wrapper, "Frame", {
-                    Name = "ListFrame",
-                    BackgroundColor3 = Color3.fromRGB(12, 12, 12),
+                local listFrame = create(right, "Frame", {
+                    Name = "DropdownList",
+                    BackgroundColor3 = Color3.fromRGB(14, 14, 22),
                     Size = UDim2.new(1, 0, 0, 0),
-                    Position = UDim2.new(0, 0, 1, 6),
+                    Position = UDim2.new(0, 0, 1, 10),
                     Visible = false,
                     ClipsDescendants = true,
                 })
-                createCorner(listFrame, 12)
-                createStroke(listFrame, Color3.fromRGB(0, 255, 255))
-                local listLayout = create(listFrame, "UIListLayout", {Padding = UDim.new(0, 4, 0, 4)})
+                createCorner(listFrame, 14)
+                createStroke(listFrame, Color3.fromRGB(60, 60, 82))
+                create(listFrame, "UIListLayout", {
+                    Padding = UDim.new(0, 6, 0, 6),
+                    SortOrder = Enum.SortOrder.LayoutOrder,
+                })
 
                 local function updateSelectedLabel()
                     if multi then
@@ -858,7 +1064,6 @@ function Paxz:CreateWindow(options)
                         end
                     else
                         selections = value
-                        self.Tab.Window.Config[flagName] = value
                         listFrame.Visible = false
                     end
                     self.Tab.Window.Config[flagName] = multi and selections or selections
@@ -870,39 +1075,37 @@ function Paxz:CreateWindow(options)
                 for _, option in ipairs(items) do
                     local item = create(listFrame, "TextButton", {
                         Name = option:gsub("%s+", "_"),
-                        BackgroundColor3 = Color3.fromRGB(20, 10, 40),
+                        BackgroundColor3 = Color3.fromRGB(18, 18, 26),
                         Text = option,
                         TextColor3 = Color3.fromRGB(255, 255, 255),
                         Font = Enum.Font.Gotham,
-                        TextSize = 15,
-                        Size = UDim2.new(1, -12, 0, 34),
-                        Position = UDim2.new(0, 0, 0, 0),
+                        TextSize = 14,
+                        Size = UDim2.new(1, 0, 0, 34),
                         AutoButtonColor = false,
                     })
-                    createCorner(item, 10)
-                    createStroke(item, Color3.fromRGB(160, 32, 240))
-
+                    createCorner(item, 12)
+                    createStroke(item, Color3.fromRGB(60, 60, 82))
                     item.Activated:Connect(function()
                         setSelection(option)
                     end)
                 end
 
-                listFrame:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-                    listFrame.Size = UDim2.new(1, 0, 0, listLayout.AbsoluteContentSize.Y + 12)
-                end)
+                local listLayout = listFrame:FindFirstChildOfClass("UIListLayout")
+                if listLayout then
+                    listLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+                        listFrame.Size = UDim2.new(1, 0, 0, listLayout.AbsoluteContentSize.Y + 16)
+                    end)
+                end
 
-                wrapper.Activated:Connect(function()
-                    listFrame.Visible = not listFrame.Visible
-                end)
-                wrapper.InputBegan:Connect(function(input)
-                    if input.UserInputType == Enum.UserInputType.Touch then
+                right.InputBegan:Connect(function(input)
+                    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
                         listFrame.Visible = not listFrame.Visible
                     end
                 end)
 
                 updateSelectedLabel()
-                self:_registerElement(title, wrapper)
-                return wrapper
+                self:_registerElement(title, row)
+                return row
             end
 
             function section:CreateKeybind(options)
@@ -912,82 +1115,69 @@ function Paxz:CreateWindow(options)
                 local flagName = options.Flag or name
                 local key = self.Tab.Window.Config[flagName] or "None"
 
-                local frame = create(contentContainer, "Frame", {
-                    Name = name:gsub("%s+", "_"),
-                    BackgroundColor3 = Color3.fromRGB(20, 10, 40),
-                    Size = UDim2.new(1, 0, 0, 56),
-                })
-                createCorner(frame, 12)
-                createStroke(frame, Color3.fromRGB(0, 255, 255))
-
-                local label = create(frame, "TextLabel", {
-                    Name = "KeybindLabel",
-                    BackgroundTransparency = 1,
-                    Text = name,
-                    TextColor3 = Color3.fromRGB(255, 255, 255),
-                    Font = Enum.Font.GothamSemibold,
-                    TextSize = 17,
-                    Size = UDim2.new(0.6, 0, 1, 0),
-                    Position = UDim2.new(0.03, 0, 0, 0),
-                    TextXAlignment = Enum.TextXAlignment.Left,
-                })
-                local keyLabel = create(frame, "TextLabel", {
+                local row, _, right = CreateRow(contentContainer, name, options.Description or "")
+                local keyLabel = create(right, "TextLabel", {
                     Name = "KeybindValue",
                     BackgroundTransparency = 1,
                     Text = key,
-                    TextColor3 = Color3.fromRGB(160, 32, 240),
+                    TextColor3 = Color3.fromRGB(138, 43, 226),
                     Font = Enum.Font.GothamBold,
                     TextSize = 16,
-                    Size = UDim2.new(0.35, -16, 0, 28),
-                    Position = UDim2.new(0.62, 0, 0.2, 0),
+                    Size = UDim2.new(1, 0, 0, 24),
+                    Position = UDim2.new(0, 0, 0, 8),
                     TextXAlignment = Enum.TextXAlignment.Right,
                 })
-                local prompt = create(frame, "TextLabel", {
+                create(right, "TextLabel", {
                     Name = "KeybindPrompt",
                     BackgroundTransparency = 1,
                     Text = "Click to bind",
-                    TextColor3 = Color3.fromRGB(200, 200, 200),
-                    Font = Enum.Font.GothamItalic,
-                    TextSize = 14,
-                    Size = UDim2.new(0.35, -16, 0, 24),
-                    Position = UDim2.new(0.62, 0, 0.55, 0),
+                    TextColor3 = Color3.fromRGB(159, 162, 166),
+                    Font = Enum.Font.Gotham,
+                    TextSize = 13,
+                    Size = UDim2.new(1, 0, 0, 20),
+                    Position = UDim2.new(0, 0, 0, 36),
                     TextXAlignment = Enum.TextXAlignment.Right,
                 })
 
                 local waitingForInput = false
-                local function updateKeybind(newKey)
-                    key = newKey
-                    self.Tab.Window.Config[flagName] = key
-                    keyLabel.Text = tostring(key)
-                    prompt.Text = "Press any key"
-                    task.spawn(callback, key)
-                    self.Tab.Window:SaveConfig()
-                end
-
-                frame.Activated:Connect(function()
-                    if waitingForInput then
-                        return
-                    end
-                    waitingForInput = true
-                    prompt.Text = "Press any key..."
-                    local connection
-                    connection = UserInputService.InputBegan:Connect(function(input, gameProcessed)
-                        if gameProcessed then return end
-                        if input.UserInputType == Enum.UserInputType.Keyboard then
-                            updateKeybind(input.KeyCode.Name)
-                            waitingForInput = false
-                            if connection then connection:Disconnect() end
-                        elseif input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.MouseButton2 or input.UserInputType == Enum.UserInputType.MouseButton3 then
-                            updateKeybind(input.UserInputType.Name)
-                            waitingForInput = false
-                            if connection then connection:Disconnect() end
+                row.InputBegan:Connect(function(input)
+                    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+                        if waitingForInput then
+                            return
                         end
-                    end)
-                    table.insert(self.Tab.Window._connections, connection)
+                        waitingForInput = true
+                        local promptLabel = row:FindFirstChild("KeybindPrompt")
+                        if promptLabel then
+                            promptLabel.Text = "Press any key..."
+                        end
+                        local connection
+                        connection = UserInputService.InputBegan:Connect(function(input, gameProcessed)
+                            if gameProcessed then return end
+                            if input.UserInputType == Enum.UserInputType.Keyboard then
+                                key = input.KeyCode.Name
+                            elseif input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.MouseButton2 or input.UserInputType == Enum.UserInputType.MouseButton3 then
+                                key = input.UserInputType.Name
+                            else
+                                return
+                            end
+                            self.Tab.Window.Config[flagName] = key
+                            keyLabel.Text = tostring(key)
+                            if promptLabel then
+                                promptLabel.Text = "Click to bind"
+                            end
+                            task.spawn(callback, key)
+                            self.Tab.Window:SaveConfig()
+                            waitingForInput = false
+                            if connection then
+                                connection:Disconnect()
+                            end
+                        end)
+                        table.insert(self.Tab.Window._connections, connection)
+                    end
                 end)
 
-                self:_registerElement(name, frame)
-                return frame
+                self:_registerElement(name, row)
+                return row
             end
 
             function section:CreateTextBox(options)
@@ -1000,45 +1190,25 @@ function Paxz:CreateWindow(options)
                 local numbersOnly = options.NumbersOnly and true or false
                 local default = self.Tab.Window.Config[flagName] or ""
 
-                local frame = create(contentContainer, "Frame", {
-                    Name = name:gsub("%s+", "_"),
-                    BackgroundColor3 = Color3.fromRGB(20, 10, 40),
-                    Size = UDim2.new(1, 0, 0, 60),
-                })
-                createCorner(frame, 12)
-                createStroke(frame, Color3.fromRGB(0, 255, 255))
-
-                local label = create(frame, "TextLabel", {
-                    Name = "TextBoxLabel",
-                    BackgroundTransparency = 1,
-                    Text = name,
-                    TextColor3 = Color3.fromRGB(255, 255, 255),
-                    Font = Enum.Font.GothamSemibold,
-                    TextSize = 17,
-                    Size = UDim2.new(1, -20, 0, 24),
-                    Position = UDim2.new(0.03, 0, 0.05, 0),
-                    TextXAlignment = Enum.TextXAlignment.Left,
-                })
-
-                local textbox = create(frame, "TextBox", {
+                local row, _, right = CreateRow(contentContainer, name, options.Description or "")
+                local textbox = create(right, "TextBox", {
                     Name = "InputBox",
-                    BackgroundColor3 = Color3.fromRGB(15, 15, 15),
+                    BackgroundColor3 = Color3.fromRGB(16, 16, 24),
                     TextColor3 = Color3.fromRGB(255, 255, 255),
                     Text = default,
                     PlaceholderText = placeholder,
                     Font = Enum.Font.Gotham,
-                    TextSize = 16,
-                    Size = UDim2.new(1, -24, 0, 28),
-                    Position = UDim2.new(0.03, 0, 0.45, 0),
+                    TextSize = 15,
+                    Size = UDim2.new(1, 0, 0, 34),
+                    Position = UDim2.new(0, 0, 0, 8),
                     ClearTextOnFocus = false,
                 })
-                createCorner(textbox, 10)
-                createStroke(textbox, Color3.fromRGB(160, 32, 240))
+                createCorner(textbox, 14)
+                createStroke(textbox, Color3.fromRGB(60, 60, 82))
 
                 local function validate(text)
                     if numbersOnly then
-                        local numeric = tonumber(text)
-                        if not numeric then
+                        if not tonumber(text) then
                             textbox.TextColor3 = Color3.fromRGB(255, 120, 120)
                             return false
                         end
@@ -1062,211 +1232,90 @@ function Paxz:CreateWindow(options)
                     end
                 end)
 
-                self:_registerElement(name, frame)
-                return frame
+                self:_registerElement(name, row)
+                return row
             end
 
             function section:CreateColorPicker(options)
                 options = options or {}
-                local name = options.Name or "ColorPicker"
+                local name = options.Name or "Color Picker"
                 local callback = options.Callback or function() end
                 local flagName = options.Flag or name
-                local default = self.Tab.Window.Config[flagName] or Color3.fromRGB(160, 32, 240)
+                local defaultColor = self.Tab.Window.Config[flagName] or Color3.fromRGB(138, 43, 226)
 
-                local frame = create(contentContainer, "Frame", {
-                    Name = name:gsub("%s+", "_"),
-                    BackgroundColor3 = Color3.fromRGB(20, 10, 40),
-                    Size = UDim2.new(1, 0, 0, 120),
-                })
-                createCorner(frame, 12)
-                createStroke(frame, Color3.fromRGB(0, 255, 255))
-
-                local label = create(frame, "TextLabel", {
-                    Name = "PickerLabel",
-                    BackgroundTransparency = 1,
-                    Text = name,
-                    TextColor3 = Color3.fromRGB(255, 255, 255),
-                    Font = Enum.Font.GothamSemibold,
-                    TextSize = 17,
-                    Size = UDim2.new(1, -24, 0, 24),
-                    Position = UDim2.new(0.03, 0, 0.03, 0),
-                    TextXAlignment = Enum.TextXAlignment.Left,
-                })
-
-                local preview = create(frame, "Frame", {
+                local row, _, right = CreateRow(contentContainer, name, options.Description or "")
+                local preview = create(right, "Frame", {
                     Name = "Preview",
-                    BackgroundColor3 = default,
-                    Size = UDim2.new(0, 0, 0, 60),
-                    Position = UDim2.new(0.03, 0, 0.35, 0),
+                    BackgroundColor3 = defaultColor,
+                    Size = UDim2.new(0, 34, 0, 34),
+                    Position = UDim2.new(1, -48, 0, 8),
                 })
-                preview.Size = UDim2.new(0, 0, 0, 60)
-                preview.Size = UDim2.new(0, 100, 0, 60)
                 createCorner(preview, 14)
-                createStroke(preview, Color3.fromRGB(160, 32, 240))
+                createStroke(preview, Color3.fromRGB(138, 43, 226))
 
-                local openButton = create(frame, "TextButton", {
+                local openButton = create(right, "TextButton", {
                     Name = "OpenPicker",
-                    BackgroundColor3 = Color3.fromRGB(30, 20, 60),
-                    Text = "Open Picker",
+                    BackgroundColor3 = Color3.fromRGB(18, 18, 28),
+                    Text = "Pick",
                     TextColor3 = Color3.fromRGB(255, 255, 255),
                     Font = Enum.Font.GothamBold,
-                    TextSize = 15,
-                    Size = UDim2.new(0, 140, 0, 34),
-                    Position = UDim2.new(0.5, 0, 0.45, 0),
+                    TextSize = 14,
+                    Size = UDim2.new(0, 90, 0, 34),
+                    Position = UDim2.new(1, -148, 0, 8),
                     AutoButtonColor = false,
                 })
-                createCorner(openButton, 12)
-                createStroke(openButton, Color3.fromRGB(0, 255, 255))
+                createCorner(openButton, 14)
+                createStroke(openButton, Color3.fromRGB(138, 43, 226))
 
-                local pickerPanel = create(frame, "Frame", {
+                local pickerPanel = create(contentContainer, "Frame", {
                     Name = "PickerPanel",
-                    BackgroundColor3 = Color3.fromRGB(10, 10, 10),
+                    BackgroundColor3 = Color3.fromRGB(14, 14, 22),
                     Size = UDim2.new(1, 0, 0, 0),
-                    Position = UDim2.new(0, 0, 1, 6),
+                    Position = UDim2.new(0, 0, 0, 0),
                     Visible = false,
                     ClipsDescendants = true,
                 })
-                createCorner(pickerPanel, 14)
-                createStroke(pickerPanel, Color3.fromRGB(0, 255, 255))
-
-                local hueBar = create(pickerPanel, "Frame", {
-                    Name = "HueBar",
-                    BackgroundColor3 = Color3.fromRGB(15, 15, 15),
-                    Size = UDim2.new(0.92, 0, 0, 26),
-                    Position = UDim2.new(0.04, 0, 0.1, 0),
+                createCorner(pickerPanel, 18)
+                createStroke(pickerPanel, Color3.fromRGB(60, 60, 82))
+                local pickerLayout = create(pickerPanel, "UIListLayout", {
+                    Padding = UDim.new(0, 8, 0, 8),
+                    SortOrder = Enum.SortOrder.LayoutOrder,
                 })
-                createCorner(hueBar, 12)
-                local hueGradient = createGradient(hueBar, Color3.fromRGB(255, 0, 0), Color3.fromRGB(255, 255, 0), 0)
-                hueGradient.Color = ColorSequence.new{
-                    ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 0, 0)),
-                    ColorSequenceKeypoint.new(0.17, Color3.fromRGB(255, 255, 0)),
-                    ColorSequenceKeypoint.new(0.33, Color3.fromRGB(0, 255, 0)),
-                    ColorSequenceKeypoint.new(0.5, Color3.fromRGB(0, 255, 255)),
-                    ColorSequenceKeypoint.new(0.67, Color3.fromRGB(0, 0, 255)),
-                    ColorSequenceKeypoint.new(0.83, Color3.fromRGB(255, 0, 255)),
-                    ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 0, 0)),
+                pickerLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+                    pickerPanel.Size = UDim2.new(1, 0, 0, pickerLayout.AbsoluteContentSize.Y + 16)
+                end)
+
+                local colorSamples = {
+                    Color3.fromRGB(138, 43, 226),
+                    Color3.fromRGB(0, 255, 127),
+                    Color3.fromRGB(255, 76, 76),
+                    Color3.fromRGB(0, 170, 255),
                 }
 
-                local saturationBox = create(pickerPanel, "Frame", {
-                    Name = "SaturationBox",
-                    BackgroundColor3 = Color3.fromRGB(255, 0, 255),
-                    Size = UDim2.new(0.92, 0, 0, 110),
-                    Position = UDim2.new(0.04, 0, 0.35, 0),
-                })
-                createCorner(saturationBox, 14)
-                local satGradient = createGradient(saturationBox, Color3.fromRGB(255, 255, 255), Color3.fromRGB(0, 0, 0), 0)
-
-                local hueHandle = create(hueBar, "Frame", {
-                    Name = "HueHandle",
-                    BackgroundColor3 = Color3.fromRGB(255, 255, 255),
-                    Size = UDim2.new(0, 0, 0, 28),
-                    Position = UDim2.new(0, -14, 0.5, -14),
-                })
-                createCorner(hueHandle, 14)
-                createStroke(hueHandle, Color3.fromRGB(160, 32, 240))
-
-                local satHandle = create(saturationBox, "Frame", {
-                    Name = "SatHandle",
-                    BackgroundColor3 = Color3.fromRGB(255, 255, 255),
-                    Size = UDim2.new(0, 0, 0, 28),
-                    Position = UDim2.new(0, -14, 0, -14),
-                })
-                createCorner(satHandle, 14)
-                createStroke(satHandle, Color3.fromRGB(160, 32, 240))
-
-                local currentHue = 0
-                local currentSaturation = 1
-                local currentValue = 1
-
-                local function toColor3(h, s, v)
-                    local color = Color3.fromHSV(h, s, v)
-                    preview.BackgroundColor3 = color
-                    self.Tab.Window.Config[flagName] = color
-                    task.spawn(callback, color)
-                    self.Tab.Window:SaveConfig()
-                end
-
-                local function updateFromHue(position)
-                    currentHue = math.clamp(position / hueBar.AbsoluteSize.X, 0, 1)
-                    toColor3(currentHue, currentSaturation, currentValue)
-                    hueHandle.Position = UDim2.new(currentHue, -14, 0.5, -14)
-                end
-
-                local function updateFromSaturation(position)
-                    currentSaturation = math.clamp(position / saturationBox.AbsoluteSize.X, 0, 1)
-                    toColor3(currentHue, currentSaturation, currentValue)
-                    satHandle.Position = UDim2.new(currentSaturation, -14, 0, -14)
-                end
-
-                local function beginDrag(input, bar, callback)
-                    local connection
-                    connection = input.Changed:Connect(function()
-                        if input.UserInputState == Enum.UserInputState.End then
-                            if connection then connection:Disconnect() end
-                        end
+                for _, colorOption in ipairs(colorSamples) do
+                    local sample = create(pickerPanel, "TextButton", {
+                        Name = "ColorOption",
+                        BackgroundColor3 = colorOption,
+                        Text = "",
+                        Size = UDim2.new(0, 72, 0, 40),
+                        AutoButtonColor = false,
+                    })
+                    createCorner(sample, 14)
+                    createStroke(sample, Color3.fromRGB(255, 255, 255))
+                    sample.Activated:Connect(function()
+                        preview.BackgroundColor3 = colorOption
+                        self.Tab.Window.Config[flagName] = colorOption
+                        task.spawn(callback, colorOption)
+                        self.Tab.Window:SaveConfig()
                     end)
-                    self.Tab.Window._connections[#self.Tab.Window._connections + 1] = connection
                 end
-
-                local function dragBar(input, bar, updater)
-                    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-                        local relative = input.Position.X - bar.AbsolutePosition.X
-                        updater(relative)
-                    end
-                end
-
-                hueBar.InputBegan:Connect(function(input)
-                    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-                        dragBar(input, hueBar, updateFromHue)
-                        local conn = UserInputService.InputChanged:Connect(function(update)
-                            if update.UserInputType == input.UserInputType then
-                                dragBar(update, hueBar, updateFromHue)
-                            end
-                        end)
-                        local endConn
-                        endConn = UserInputService.InputEnded:Connect(function(update)
-                            if update == input then
-                                if conn then conn:Disconnect() end
-                                if endConn then endConn:Disconnect() end
-                            end
-                        end)
-                        table.insert(self.Tab.Window._connections, conn)
-                        table.insert(self.Tab.Window._connections, endConn)
-                    end
-                end)
-
-                saturationBox.InputBegan:Connect(function(input)
-                    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-                        dragBar(input, saturationBox, updateFromSaturation)
-                        local conn = UserInputService.InputChanged:Connect(function(update)
-                            if update.UserInputType == input.UserInputType then
-                                dragBar(update, saturationBox, updateFromSaturation)
-                            end
-                        end)
-                        local endConn
-                        endConn = UserInputService.InputEnded:Connect(function(update)
-                            if update == input then
-                                if conn then conn:Disconnect() end
-                                if endConn then endConn:Disconnect() end
-                            end
-                        end)
-                        table.insert(self.Tab.Window._connections, conn)
-                        table.insert(self.Tab.Window._connections, endConn)
-                    end
-                end)
 
                 openButton.Activated:Connect(function()
                     pickerPanel.Visible = not pickerPanel.Visible
                 end)
-                openButton.InputBegan:Connect(function(input)
-                    if input.UserInputType == Enum.UserInputType.Touch then
-                        pickerPanel.Visible = not pickerPanel.Visible
-                    end
-                end)
 
-                self:_registerElement(name, frame)
-                toColor3(default.R, default.G, default.B)
-                return frame
+                self:_registerElement(name, row)
+                return row
             end
 
             function section:CreateSection(name)
@@ -1284,7 +1333,6 @@ function Paxz:CreateWindow(options)
         local title = options.Title or "Notification"
         local content = options.Content or "No content provided"
         local duration = options.Duration or 4
-        local image = options.Image or ""
 
         local notifContainer = screenGui:FindFirstChild("NotificationRoot")
         if not notifContainer then
@@ -1292,68 +1340,57 @@ function Paxz:CreateWindow(options)
                 Name = "NotificationRoot",
                 BackgroundTransparency = 1,
                 Size = UDim2.new(0, 320, 0, 0),
-                Position = UDim2.new(1, -340, 1, -20),
+                Position = UDim2.new(1, -360, 1, -28),
                 AnchorPoint = Vector2.new(1, 1),
             })
         end
 
         local notification = create(notifContainer, "Frame", {
             Name = "Notification",
-            BackgroundColor3 = Color3.fromRGB(24, 0, 60),
-            Size = UDim2.new(1, 0, 0, 90),
-            Position = UDim2.new(0, 0, 0, notifContainer.AbsoluteSize.Y + 8),
+            BackgroundColor3 = Color3.fromRGB(12, 12, 18),
+            BackgroundTransparency = 0.04,
+            Size = UDim2.new(1, 0, 0, 94),
+            Position = UDim2.new(0, 0, 0, notifContainer.AbsoluteSize.Y + 12),
             ClipsDescendants = true,
         })
-        createCorner(notification, 16)
-        createStroke(notification, Color3.fromRGB(160, 32, 240))
-        createGradient(notification, Color3.fromRGB(40, 0, 120), Color3.fromRGB(0, 0, 20), 135)
+        createCorner(notification, 18)
+        createStroke(notification, Color3.fromRGB(138, 43, 226))
+        createGradient(notification, Color3.fromRGB(20, 12, 40), Color3.fromRGB(6, 6, 16), 130)
 
-        if image ~= "" then
-            create(notification, "ImageLabel", {
-                Name = "Icon",
-                BackgroundTransparency = 1,
-                Image = image,
-                Size = UDim2.new(0, 0, 0, 48),
-                Position = UDim2.new(0.03, 0, 0.1, 0),
-                ScaleType = Enum.ScaleType.Fit,
-            })
-        end
-
-        local titleLabel = create(notification, "TextLabel", {
+        create(notification, "TextLabel", {
             Name = "Title",
             BackgroundTransparency = 1,
             Text = title,
             TextColor3 = Color3.fromRGB(255, 255, 255),
             Font = Enum.Font.GothamBold,
-            TextSize = 17,
+            TextSize = 16,
             Size = UDim2.new(1, -24, 0, 24),
-            Position = UDim2.new(0.03, 0, 0.1, 0),
+            Position = UDim2.new(0, 0.03, 0, 10),
             TextXAlignment = Enum.TextXAlignment.Left,
         })
-        local contentLabel = create(notification, "TextLabel", {
+        create(notification, "TextLabel", {
             Name = "Content",
             BackgroundTransparency = 1,
             Text = content,
-            TextColor3 = Color3.fromRGB(255, 255, 255),
-            TextTransparency = 0.2,
+            TextColor3 = Color3.fromRGB(159, 162, 166),
             Font = Enum.Font.Gotham,
             TextSize = 14,
             Size = UDim2.new(1, -24, 0, 40),
-            Position = UDim2.new(0.03, 0, 0.35, 0),
+            Position = UDim2.new(0, 0.03, 0, 32),
             TextWrapped = true,
             TextXAlignment = Enum.TextXAlignment.Left,
         })
 
-        notifContainer.Size = UDim2.new(0, 320, 0, notifContainer.AbsoluteSize.Y + 98)
-        tween(notification, {Position = UDim2.new(0, 0, 0, notifContainer.AbsoluteSize.Y - 98)}, 0.25)
+        notifContainer.Size = UDim2.new(0, 320, 0, notifContainer.AbsoluteSize.Y + 104)
+        tween(notification, {Position = UDim2.new(0, 0, 0, notifContainer.AbsoluteSize.Y - 100)}, 0.28)
 
         task.delay(duration, function()
-            tween(notification, {BackgroundTransparency = 1, Size = UDim2.new(1, 0, 0, 0)}, 0.25)
-            task.wait(0.25)
+            tween(notification, {BackgroundTransparency = 1, Size = UDim2.new(1, 0, 0, 0)}, 0.24)
+            task.wait(0.26)
             if notification and notification.Parent then
                 notification:Destroy()
             end
-            notifContainer.Size = UDim2.new(0, 320, 0, notifContainer.AbsoluteSize.Y - 98)
+            notifContainer.Size = UDim2.new(0, 320, 0, notifContainer.AbsoluteSize.Y - 100)
         end)
     end
 
@@ -1362,13 +1399,13 @@ function Paxz:CreateWindow(options)
         setClipboard(invite)
         self:Notify({
             Title = "Discord Link Copied",
-            Content = "Discord invite copied to clipboard: " .. invite,
-            Duration = 5,
+            Content = invite,
+            Duration = 4,
         })
     end
 
     function window:_initializeDragging()
-        local dragRoot = header
+        local dragRoot = navBar
         local function update(input)
             local delta = input.Position - window._dragStart
             root.Position = UDim2.new(0, window._startPos.X + delta.X, 0, window._startPos.Y + delta.Y)
@@ -1379,12 +1416,11 @@ function Paxz:CreateWindow(options)
                 window._dragInput = input
                 window._dragStart = input.Position
                 window._startPos = {X = root.AbsolutePosition.X, Y = root.AbsolutePosition.Y}
-                window._isDragging = true
             end
         end)
 
         window._connections[#window._connections + 1] = UserInputService.InputChanged:Connect(function(input)
-            if input == window._dragInput and window._isDragging then
+            if input == window._dragInput then
                 update(input)
             end
         end)
@@ -1392,7 +1428,6 @@ function Paxz:CreateWindow(options)
         window._connections[#window._connections + 1] = UserInputService.InputEnded:Connect(function(input)
             if input == window._dragInput then
                 window._dragInput = nil
-                window._isDragging = false
             end
         end)
     end
@@ -1406,20 +1441,96 @@ function Paxz:CreateWindow(options)
     window:_initializeDragging()
 
     task.spawn(function()
-        local increments = {0.15, 0.4, 0.7, 1}
-        for index, progress in ipairs(increments) do
-            tween(loadingProgress, {Size = UDim2.new(progress, 0, 1, 0)}, 0.35)
-            loadingText.Text = loadingTitle .. "  (" .. math.floor(progress * 100) .. "%)"
-            task.wait(0.32)
+        local steps = {0.18, 0.45, 0.72, 1}
+        for _, progress in ipairs(steps) do
+            tween(landingCard, {Position = UDim2.new(0.5, 0, 0.5, 0)}, 0.28)
+            task.wait(0.1)
         end
-        task.wait(0.3)
-        tween(loadingOverlay, {BackgroundTransparency = 1}, 0.25)
-        task.wait(0.25)
-        loadingOverlay:Destroy()
     end)
 
     table.insert(self._instances, window)
     return window
 end
+
+function Paxz:Notify(options)
+    options = options or {}
+    local title = options.Title or "Notification"
+    local content = options.Content or "No content provided"
+    local duration = options.Duration or 4
+
+    if not self.NotificationsRoot and self._instances[1] and self._instances[1]._screenGui then
+        self.NotificationsRoot = create(self._instances[1]._screenGui, "Frame", {
+            Name = "GlobalNotificationRoot",
+            BackgroundTransparency = 1,
+            Size = UDim2.new(0, 340, 0, 0),
+            Position = UDim2.new(1, -360, 1, -20),
+            AnchorPoint = Vector2.new(1, 1),
+        })
+    end
+
+    local container = self.NotificationsRoot
+    if container then
+        local notification = create(container, "Frame", {
+            Name = "Notification",
+            BackgroundColor3 = Color3.fromRGB(14, 14, 22),
+            BackgroundTransparency = 0.04,
+            Size = UDim2.new(1, 0, 0, 88),
+            Position = UDim2.new(0, 0, 0, container.AbsoluteSize.Y + 12),
+        })
+        createCorner(notification, 18)
+        createStroke(notification, Color3.fromRGB(138, 43, 226))
+        createGradient(notification, Color3.fromRGB(20, 12, 40), Color3.fromRGB(6, 6, 16), 130)
+
+        create(notification, "TextLabel", {
+            Name = "Title",
+            BackgroundTransparency = 1,
+            Text = title,
+            TextColor3 = Color3.fromRGB(255, 255, 255),
+            Font = Enum.Font.GothamBold,
+            TextSize = 16,
+            Size = UDim2.new(1, -24, 0, 24),
+            Position = UDim2.new(0, 0.03, 0, 10),
+            TextXAlignment = Enum.TextXAlignment.Left,
+        })
+        create(notification, "TextLabel", {
+            Name = "Content",
+            BackgroundTransparency = 1,
+            Text = content,
+            TextColor3 = Color3.fromRGB(159, 162, 166),
+            Font = Enum.Font.Gotham,
+            TextSize = 14,
+            Size = UDim2.new(1, -24, 0, 40),
+            Position = UDim2.new(0, 0.03, 0, 32),
+            TextWrapped = true,
+            TextXAlignment = Enum.TextXAlignment.Left,
+        })
+
+        container.Size = UDim2.new(0, 340, 0, container.AbsoluteSize.Y + 100)
+        tween(notification, {Position = UDim2.new(0, 0, 0, container.AbsoluteSize.Y - 100)}, 0.28)
+
+        task.delay(duration, function()
+            tween(notification, {BackgroundTransparency = 1, Size = UDim2.new(1, 0, 0, 0)}, 0.24)
+            task.wait(0.26)
+            if notification and notification.Parent then
+                notification:Destroy()
+            end
+            container.Size = UDim2.new(0, 340, 0, container.AbsoluteSize.Y - 100)
+        end)
+    end
+end
+
+function Paxz:JoinDiscord(inviteCode)
+    local invite = string.format("https://discord.gg/%s", inviteCode)
+    setClipboard(invite)
+    self:Notify({
+        Title = "Discord Link Copied",
+        Content = invite,
+        Duration = 4,
+    })
+end
+
+Paxz.CreatePill = CreatePill
+Paxz.CreateRow = CreateRow
+Paxz.CreateNav = CreateNav
 
 return Paxz
