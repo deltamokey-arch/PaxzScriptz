@@ -1374,36 +1374,36 @@ function Paxz:CreateWindow(options)
             root.Position = UDim2.new(0, window._startPos.X + delta.X, 0, window._startPos.Y + delta.Y)
         end
 
-        self._connections[#self._connections + 1] = dragRoot.InputBegan:Connect(function(input)
+        window._connections[#window._connections + 1] = dragRoot.InputBegan:Connect(function(input)
             if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-                self._dragInput = input
-                self._dragStart = input.Position
-                self._startPos = {X = root.AbsolutePosition.X, Y = root.AbsolutePosition.Y}
-                self._isDragging = true
+                window._dragInput = input
+                window._dragStart = input.Position
+                window._startPos = {X = root.AbsolutePosition.X, Y = root.AbsolutePosition.Y}
+                window._isDragging = true
             end
         end)
 
-        self._connections[#self._connections + 1] = UserInputService.InputChanged:Connect(function(input)
-            if input == self._dragInput and self._isDragging then
+        window._connections[#window._connections + 1] = UserInputService.InputChanged:Connect(function(input)
+            if input == window._dragInput and window._isDragging then
                 update(input)
             end
         end)
 
-        self._connections[#self._connections + 1] = UserInputService.InputEnded:Connect(function(input)
-            if input == self._dragInput then
-                self._dragInput = nil
-                self._isDragging = false
+        window._connections[#window._connections + 1] = UserInputService.InputEnded:Connect(function(input)
+            if input == window._dragInput then
+                window._dragInput = nil
+                window._isDragging = false
             end
         end)
     end
 
-    self._connections[#self._connections + 1] = searchBox:GetPropertyChangedSignal("Text"):Connect(function()
+    window._connections[#window._connections + 1] = searchBox:GetPropertyChangedSignal("Text"):Connect(function()
         local text = searchBox.Text or ""
-        self:_refreshSearch(text)
+        window:_refreshSearch(text)
     end)
 
-    self._loadConfig(self)
-    self:_initializeDragging()
+    window:_loadConfig()
+    window:_initializeDragging()
 
     task.spawn(function()
         local increments = {0.15, 0.4, 0.7, 1}
