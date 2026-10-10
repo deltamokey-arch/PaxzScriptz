@@ -3,15 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Paxz Scriptz</title>
+    <title>Paxz Scriptz - Cosmic Edition</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
         :root { 
-            --bg: #050505; 
-            --accent: #8a2be2; 
-            --accent-glow: rgba(138, 43, 226, 0.4); 
+            --bg: #030208; 
+            --accent: #9d4edd; 
+            --accent-bright: #c77dff;
+            --accent-glow: rgba(157, 78, 221, 0.6); 
+            --accent-border: rgba(199, 125, 255, 0.25);
             --text: #ffffff; 
-            --text-dim: #a0a0a0; 
+            --text-dim: #94a3b8; 
+            --transition-smooth: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         * { box-sizing: border-box; }
@@ -19,42 +23,103 @@
         body { 
             background: var(--bg); 
             color: var(--text); 
-            font-family: 'Segoe UI', Roboto, sans-serif; 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
             margin: 0; 
-            overflow: hidden; /* Zorgt dat scrollen niet nodig is */
+            overflow: hidden;
             height: 100vh;
             display: flex;
             flex-direction: column;
+            opacity: 0;
+            transform: scale(0.98);
+            animation: spaceEntrance 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        @keyframes spaceEntrance {
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        #space-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
         }
         
-        /* Navigatie compacter */
         nav { 
             display: flex; 
             justify-content: space-between; 
             align-items: center; 
-            padding: 10px 8%; 
-            background: rgba(0,0,0,0.9); 
-            border-bottom: 1px solid #1a1a1a; 
+            padding: 16px 8%; 
+            background: rgba(3, 2, 8, 0.7); 
+            border-bottom: 1px solid rgba(199, 125, 255, 0.12); 
             z-index: 1000;
-            backdrop-filter: blur(10px);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
         }
 
-        .logo { font-size: 20px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; text-shadow: 0 0 5px rgba(138, 43, 226, 0.3); transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94); }
-        .logo span { color: var(--accent); animation: glow 3s ease-in-out infinite; }
-        .logo span { color: var(--accent); animation: glow 3s ease-in-out infinite; }
+        .logo { 
+            font-size: 20px; 
+            font-weight: 900; 
+            text-transform: uppercase; 
+            letter-spacing: 2px; 
+            transition: var(--transition-smooth);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .logo i {
+            color: var(--accent-bright);
+            font-size: 18px;
+            filter: drop-shadow(0 0 8px var(--accent-bright));
+            animation: planetSpin 20s linear infinite;
+        }
+        .logo:hover {
+            transform: scale(1.03);
+            text-shadow: 0 0 15px rgba(199, 125, 255, 0.6);
+        }
+        .logo span { 
+            color: var(--accent-bright); 
+            animation: cosmicGlow 4s ease-in-out infinite; 
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 10px;
+        }
 
         .nav-links a { 
             color: var(--text-dim); 
             text-decoration: none; 
-            margin-left: 20px; 
+            padding: 8px 18px;
+            border-radius: 50px;
             font-size: 12px; 
-            font-weight: 600; 
+            font-weight: 700; 
             text-transform: uppercase; 
-            transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            letter-spacing: 1px;
+            transition: var(--transition-smooth);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
         }
-        .nav-links a i { margin-right: 5px; }
 
-        /* Hero Sectie volledig herschaald */
+        .nav-links a:hover { 
+            color: var(--text); 
+            background: rgba(157, 78, 221, 0.15);
+            border-color: var(--accent-border);
+            transform: translateY(-2px);
+            box-shadow: 0 0 15px rgba(157, 78, 221, 0.3);
+        }
+
         .hero { 
             flex-grow: 1;
             display: flex; 
@@ -62,141 +127,265 @@
             justify-content: center; 
             align-items: center; 
             text-align: center; 
-            padding: 20px; 
-            background: linear-gradient(-45deg, #11051a, #050505, #1a0b2e, #0a0a0a); 
-            background-size: 400% 400%;
-            animation: bgShift 20s ease infinite;
+            padding: 16px; 
+            position: relative;
+            overflow: hidden;
+            background: radial-gradient(ellipse at center, rgba(30, 10, 60, 0.4) 0%, rgba(3, 2, 8, 0.95) 80%);
+        }
+
+        /* Glowing Cosmic Nebula Orbs */
+        .nebula {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(90px);
+            pointer-events: none;
+            opacity: 0.45;
+            z-index: 0;
+        }
+        .nebula-1 {
+            width: 380px;
+            height: 380px;
+            background: radial-gradient(circle, #7209b7 0%, transparent 70%);
+            top: 20%;
+            left: 25%;
+            animation: nebulaFloat1 18s ease-in-out infinite alternate;
+        }
+        .nebula-2 {
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, #3a0ca3 0%, transparent 70%);
+            bottom: 15%;
+            right: 20%;
+            animation: nebulaFloat2 22s ease-in-out infinite alternate;
+        }
+
+        .hero > * {
+            position: relative;
+            z-index: 1;
         }
 
         .status-bar {
             font-size: 10px;
-            letter-spacing: 1px;
-            color: #00ff00;
-            margin-bottom: 15px;
-            background: rgba(0, 255, 0, 0.05);
-            padding: 5px 12px;
+            letter-spacing: 1.2px;
+            color: #00ffaa;
+            margin-bottom: 14px;
+            background: rgba(0, 255, 170, 0.05);
+            padding: 5px 14px;
             border-radius: 50px;
-            border: 1px solid rgba(0, 255, 0, 0.2);
+            border: 1px solid rgba(0, 255, 170, 0.25);
+            backdrop-filter: blur(12px);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 700;
+            box-shadow: 0 0 20px rgba(0, 255, 170, 0.1);
+            animation: statusPulse 3s ease-in-out infinite;
         }
 
         .pulsating-dot {
             height: 6px;
             width: 6px;
-            background-color: #00ff00;
+            background-color: #00ffaa;
             border-radius: 50%;
             display: inline-block;
-            margin-right: 5px;
-            box-shadow: 0 0 8px #00ff00;
+            box-shadow: 0 0 8px #00ffaa, 0 0 16px #00ffaa;
             animation: pulse 1.5s infinite;
         }
 
-        /* Titel verkleind (Was te lomp op image_46ab05.jpg) */
         .hero h1 { 
-            font-size: 3.5rem; 
+            font-size: 2.8rem; 
             margin: 0; 
             font-weight: 900; 
             letter-spacing: -1px; 
-            text-shadow: 0 0 20px rgba(138, 43, 226, 0.5);
+            text-shadow: 0 0 35px rgba(157, 78, 221, 0.4);
+            line-height: 1.1;
         }
 
         .hero h1 span { 
-            background: linear-gradient(to right, #fff, var(--accent)); 
+            background: linear-gradient(135deg, #ffffff 20%, #c77dff 60%, #7209b7 100%); 
             background-clip: text;
             -webkit-background-clip: text; 
             -webkit-text-fill-color: transparent; 
         }
 
-        /* Subtext verkleind */
         .hero-subtext { 
-            color: #e0e0e0; 
-            font-size: 1.1rem; 
-            margin: 15px 0 5px; 
+            color: #e2e8f0; 
+            font-size: 0.98rem; 
+            margin: 12px 0 6px; 
+            font-weight: 400;
+            letter-spacing: -0.2px;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.8);
+        }
+
+        .hero-subtext b {
+            color: #ffffff;
+            font-weight: 800;
+            background: linear-gradient(90deg, #fff, #c77dff);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
 
         .highlight {
-            color: var(--accent);
-            font-weight: bold;
-            font-size: 0.8rem;
+            color: var(--accent-bright);
+            font-weight: 800;
+            font-size: 0.75rem;
             text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        /* Badge compacter */
-        .security-badge {
-            margin-top: 15px;
-            font-size: 11px;
-            color: #888;
-            background: rgba(255, 255, 255, 0.03);
-            padding: 8px 15px;
-            border-radius: 8px;
-            border: 1px dashed #333;
-        }
-
-        /* Knoppen compacter gemaakt */
-        .btn-container {
-            margin-top: 25px;
+            letter-spacing: 1.5px;
+            text-shadow: 0 0 15px rgba(199, 125, 255, 0.6);
             display: flex;
-            flex-direction: column;
             align-items: center;
-            gap: 12px;
+            gap: 6px;
         }
 
-        .btn { 
-            background: var(--accent); 
-            color: white; 
-            padding: 14px 45px; 
-            border-radius: 6px; 
-            text-decoration: none; 
-            font-weight: 800; 
-            transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94); 
-            text-transform: uppercase; 
-            font-size: 15px;
+        .highlight::before, .highlight::after {
+            content: '✨';
+            font-size: 10px;
         }
 
-        .btn:hover { 
-            transform: translateY(-2px) scale(1.05); 
-            box-shadow: 0 8px 20px var(--accent-glow); 
-        }
-
-        .btn-discord {
-            background: #5865F2;
-            color: white;
-            text-decoration: none;
-            font-weight: 600;
-            padding: 8px 20px;
-            border-radius: 5px;
-            font-size: 13px;
+        .security-badge {
+            margin-top: 14px;
+            font-size: 11px;
+            color: #cbd5e1;
+            background: rgba(15, 7, 30, 0.65);
+            padding: 7px 16px;
+            border-radius: 50px;
+            border: 1px solid var(--accent-border);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            box-shadow: 0 6px 24px rgba(0, 0, 0, 0.6), inset 0 0 12px rgba(157, 78, 221, 0.1);
             display: flex;
             align-items: center;
             gap: 8px;
-            transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            transition: var(--transition-smooth);
         }
 
-        .btn-discord:hover { background: #4752c4; transform: scale(1.05); }
+        .security-badge:hover {
+            border-color: var(--accent-bright);
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 8px 30px rgba(157, 78, 221, 0.25);
+        }
+
+        .security-badge i {
+            color: var(--accent-bright);
+            font-size: 12px;
+            filter: drop-shadow(0 0 5px var(--accent-bright));
+        }
+
+        .btn-container {
+            margin-top: 22px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn { 
+            background: linear-gradient(135deg, #7209b7 0%, #9d4edd 100%); 
+            color: white; 
+            padding: 12px 36px; 
+            border-radius: 50px; 
+            text-decoration: none; 
+            font-weight: 800; 
+            transition: var(--transition-smooth); 
+            text-transform: uppercase; 
+            font-size: 12px;
+            letter-spacing: 1.2px;
+            box-shadow: 0 0 22px rgba(157, 78, 221, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(60deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transform: translateX(-100%);
+            transition: transform 0.7s ease;
+        }
+
+        .btn:hover::after {
+            transform: translateX(100%);
+        }
+
+        .btn:hover { 
+            transform: translateY(-3px) scale(1.03); 
+            box-shadow: 0 0 35px rgba(199, 125, 255, 0.7), 0 8px 20px rgba(0, 0, 0, 0.4); 
+            background: linear-gradient(135deg, #9d4edd 0%, #c77dff 100%);
+        }
+
+        .btn-discord {
+            background: rgba(88, 101, 242, 0.85);
+            color: white;
+            text-decoration: none;
+            font-weight: 700;
+            padding: 8px 18px;
+            border-radius: 50px;
+            font-size: 11px;
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            transition: var(--transition-smooth);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 16px rgba(88, 101, 242, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+
+        .btn-discord:hover { 
+            background: #5865F2; 
+            transform: translateY(-2px) scale(1.03); 
+            box-shadow: 0 6px 22px rgba(88, 101, 242, 0.5); 
+        }
 
         @keyframes pulse {
-            0% { transform: scale(0.9); opacity: 1; }
-            50% { transform: scale(1.2); opacity: 0.5; }
-            100% { transform: scale(0.9); opacity: 1; }
+            0% { transform: scale(0.95); opacity: 1; box-shadow: 0 0 0 0 rgba(0, 255, 170, 0.6); }
+            70% { transform: scale(1.3); opacity: 0.6; box-shadow: 0 0 0 10px rgba(0, 255, 170, 0); }
+            100% { transform: scale(0.95); opacity: 1; box-shadow: 0 0 0 0 rgba(0, 255, 170, 0); }
         }
 
-        @keyframes bgShift {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
+        @keyframes statusPulse {
+            0%, 100% { border-color: rgba(0, 255, 170, 0.25); }
+            50% { border-color: rgba(0, 255, 170, 0.6); }
         }
 
-        @keyframes glow {
-            0% { text-shadow: 0 0 5px rgba(138, 43, 226, 0.3); }
-            50% { text-shadow: 0 0 20px rgba(138, 43, 226, 0.8); }
-            100% { text-shadow: 0 0 5px rgba(138, 43, 226, 0.3); }
+        @keyframes nebulaFloat1 {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(60px, -40px) scale(1.2); }
+        }
+
+        @keyframes nebulaFloat2 {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(-50px, 50px) scale(1.15); }
+        }
+
+        @keyframes cosmicGlow {
+            0%, 100% { text-shadow: 0 0 10px rgba(157, 78, 221, 0.4); }
+            50% { text-shadow: 0 0 30px rgba(199, 125, 255, 0.9), 0 0 50px rgba(114, 9, 183, 0.6); }
+        }
+
+        @keyframes planetSpin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
         }
     </style>
 </head>
 <body>
 
+    <canvas id="space-canvas"></canvas>
+
+    <div class="nebula nebula-1"></div>
+    <div class="nebula nebula-2"></div>
+
     <nav>
-        <div class="logo">Paxz<span>Scriptz</span></div>
+        <div class="logo"><i class="fas fa-meteor"></i> Paxz<span>Scriptz</span></div>
         <div class="nav-links">
             <a href="index.html"><i class="fas fa-home"></i> Home</a>
             <a href="scripts.html"><i class="fas fa-code"></i> Scripts</a>
@@ -221,7 +410,7 @@
         </div>
 
         <div class="btn-container">
-            <a href="scripts.html" class="btn">Configure Now!</a>
+            <a href="scripts.html" class="btn"><i class="fas fa-rocket"></i> Configure Now!</a>
             
             <a href="https://discord.gg/6yr2acGdgm" target="_blank" class="btn-discord">
                 <i class="fab fa-discord"></i> Join Paxz Scriptz
@@ -229,5 +418,77 @@
         </div>
     </section>
 
+    <script>
+        const canvas = document.getElementById('space-canvas');
+        const ctx = canvas.getContext('2d');
+
+        let stars = [];
+        const numStars = 180;
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            initStars();
+        }
+
+        class Star {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.size = Math.random() * 1.8 + 0.2;
+                this.speedX = (Math.random() - 0.5) * 0.2;
+                this.speedY = (Math.random() - 0.5) * 0.2;
+                this.opacity = Math.random();
+                this.opacitySpeed = (Math.random() * 0.02) + 0.005;
+                this.color = Math.random() > 0.3 ? '#ffffff' : (Math.random() > 0.5 ? '#c77dff' : '#00ffaa');
+            }
+
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+
+                if (this.x < 0) this.x = canvas.width;
+                if (this.x > canvas.width) this.x = 0;
+                if (this.y < 0) this.y = canvas.height;
+                if (this.y > canvas.height) this.y = 0;
+
+                this.opacity += this.opacitySpeed;
+                if (this.opacity > 1 || this.opacity < 0.1) {
+                    this.opacitySpeed = -this.opacitySpeed;
+                }
+            }
+
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.globalAlpha = Math.abs(this.opacity);
+                ctx.shadowBlur = this.size * 4;
+                ctx.shadowColor = this.color;
+                ctx.fill();
+                ctx.globalAlpha = 1;
+            }
+        }
+
+        function initStars() {
+            stars = [];
+            for (let i = 0; i < numStars; i++) {
+                stars.push(new Star());
+            }
+        }
+
+        function animateStars() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            stars.forEach(star => {
+                star.update();
+                star.draw();
+            });
+            requestAnimationFrame(animateStars);
+        }
+
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+        animateStars();
+    </script>
 </body>
 </html>
